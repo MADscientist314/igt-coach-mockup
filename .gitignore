@@ -6,5 +6,5 @@ __pycache__/
 screenshots/*.png
 .token.json
 
-# Internal drafts - names a colleague, not part of the deliverable
-draft_email_lexie.md
+# Internal drafts, not part of the deliverable
+draft_email_*.md
