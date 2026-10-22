@@ -1,0 +1,10 @@
+# Dexcom client secret. Never commit this.
+.env
+__pycache__/
+*.pyc
+.pytest_cache/
+screenshots/*.png
+.token.json
+
+# Internal drafts - names a colleague, not part of the deliverable
+draft_email_lexie.md

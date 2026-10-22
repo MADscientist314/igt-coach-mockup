@@ -1,0 +1,53 @@
+# Pregnancy food-safety screen.
+#
+# Nothing carrying one of these flags can ever be produced as a suggestion,
+# regardless of what it would do to the glucose curve. This is checked in
+# swaps.is_blocked() and asserted in the test suite.
+#
+# These are food-safety exclusions, not glycaemic ones. They exist because
+# a swap engine that optimises a curve without knowing it is talking to a
+# pregnant woman will eventually suggest something unsafe.
+
+categories:
+  - key: high_mercury
+    label: High-mercury fish
+    reason: FDA and EPA advise avoiding shark, swordfish, king mackerel,
+      tilefish and bigeye tuna in pregnancy because of methylmercury and
+      fetal neurodevelopment.
+    examples: [Swordfish, Shark, King mackerel, Tilefish, Bigeye tuna]
+
+  - key: unpasteurized
+    label: Unpasteurised dairy
+    reason: Listeria risk. Soft cheeses made from unpasteurised milk,
+      including queso fresco, are a recognised source.
+    examples: [Queso fresco, Brie, Feta, Blue cheese, Raw milk]
+
+  - key: raw_undercooked
+    label: Raw or undercooked animal food
+    reason: Listeria, salmonella and toxoplasma risk.
+    examples: [Sushi-grade raw fish, Runny eggs, Rare meat, Raw sprouts]
+
+  - key: deli_unheated
+    label: Unheated deli meat
+    reason: Listeria risk unless heated until steaming.
+    examples: [Cold cuts, Pate, Smoked refrigerated seafood]
+
+  - key: high_vitamin_a
+    label: Preformed vitamin A
+    reason: Teratogenic at high intake. Liver and liver products are the
+      main dietary source.
+    examples: [Liver, Pate, Cod liver oil]
+
+  - key: alcohol
+    label: Alcohol
+    reason: No established safe amount in pregnancy.
+    examples: [Wine, Beer, Spirits]
+
+# Caffeine is a ceiling rather than an exclusion, which is why it is
+# handled separately in swaps.CAFFEINE_CEILING_MG.
+ceilings:
+  - key: caffeine
+    label: Caffeine
+    limit_mg_per_day: 200
+    reason: Commonly advised ceiling in pregnancy. The app shows the running
+      total; it does not withhold anything.

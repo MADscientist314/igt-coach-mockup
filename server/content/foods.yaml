@@ -1,0 +1,430 @@
+# Food library for the IGT Coach mock-up.
+#
+# Macronutrients are per the portion named in `portion`, rounded to whole
+# grams, in the neighbourhood of USDA FoodData Central values. This is
+# demonstration content for a user-interface mock-up, not a clinical
+# nutrition database; the real study would source from FoodData Central and
+# have the library reviewed by the diabetes educators who deliver the
+# medical nutrition therapy this intervention is based on.
+#
+# `safety_flags` drive the pregnancy food-safety screen in blocklist.yaml.
+
+foods:
+  # ---------------------------------------------------------- breakfast
+  - id: bagel_plain
+    name: Plain bagel
+    category: breakfast_grain
+    portion: 1 medium (98 g)
+    carb_g: 53
+    protein_g: 10
+    fat_g: 2
+    fiber_g: 2
+    note: Refined wheat, very little fiber, so it empties fast.
+
+  - id: bagel_wholewheat
+    name: Whole-wheat bagel
+    category: breakfast_grain
+    portion: 1 medium (98 g)
+    carb_g: 48
+    protein_g: 10
+    fat_g: 2
+    fiber_g: 7
+    note: Same bagel, more intact bran. Slower to break down.
+
+  - id: oats_steelcut
+    name: Steel-cut oats
+    category: breakfast_grain
+    portion: 1 cup cooked
+    carb_g: 29
+    protein_g: 6
+    fat_g: 3
+    fiber_g: 5
+    note: Coarser cut than instant, so it digests more slowly.
+
+  - id: oats_instant
+    name: Instant oatmeal
+    category: breakfast_grain
+    portion: 1 packet
+    carb_g: 32
+    protein_g: 4
+    fat_g: 2
+    fiber_g: 3
+    note: Pre-cooked and milled fine, which speeds absorption.
+
+  - id: cereal_flakes
+    name: Corn flakes
+    category: breakfast_grain
+    portion: 1.5 cups
+    carb_g: 36
+    protein_g: 3
+    fat_g: 0
+    fiber_g: 1
+
+  # --------------------------------------------------------------- bread
+  - id: bread_white
+    name: White sandwich bread
+    category: bread
+    portion: 2 slices
+    carb_g: 28
+    protein_g: 5
+    fat_g: 2
+    fiber_g: 2
+
+  - id: bread_sourdough
+    name: Sourdough
+    category: bread
+    portion: 2 slices
+    carb_g: 26
+    protein_g: 6
+    fat_g: 1
+    fiber_g: 3
+    note: Fermentation lowers the rate of release a little.
+
+  - id: bread_seeded_rye
+    name: Seeded rye
+    category: bread
+    portion: 2 slices
+    carb_g: 24
+    protein_g: 7
+    fat_g: 4
+    fiber_g: 7
+    note: Dense crumb and whole seeds, so it releases gradually.
+
+  - id: tortilla_flour
+    name: Flour tortilla
+    category: bread
+    portion: 1 large
+    carb_g: 36
+    protein_g: 6
+    fat_g: 6
+    fiber_g: 2
+
+  - id: tortilla_corn
+    name: Corn tortillas
+    category: bread
+    portion: 2 small
+    carb_g: 24
+    protein_g: 3
+    fat_g: 2
+    fiber_g: 4
+    note: Masa, nixtamalised, with more intact structure than flour.
+
+  # ---------------------------------------------------------- rice/grain
+  - id: rice_white
+    name: White rice
+    category: rice_grain
+    portion: 1 cup cooked
+    carb_g: 45
+    protein_g: 4
+    fat_g: 0
+    fiber_g: 1
+
+  - id: rice_brown
+    name: Brown rice
+    category: rice_grain
+    portion: 1 cup cooked
+    carb_g: 45
+    protein_g: 5
+    fat_g: 2
+    fiber_g: 4
+    note: Bran layer left on. Same amount of carbohydrate, slower.
+
+  - id: rice_white_cooled
+    name: White rice, cooked and cooled
+    category: rice_grain
+    portion: 1 cup, chilled then reheated
+    carb_g: 45
+    protein_g: 4
+    fat_g: 0
+    fiber_g: 3
+    note: Cooling forms resistant starch, which behaves more like fiber.
+
+  - id: quinoa
+    name: Quinoa
+    category: rice_grain
+    portion: 1 cup cooked
+    carb_g: 39
+    protein_g: 8
+    fat_g: 4
+    fiber_g: 5
+
+  # --------------------------------------------------------------- pasta
+  - id: pasta_white
+    name: White pasta
+    category: pasta
+    portion: 1 cup cooked
+    carb_g: 43
+    protein_g: 8
+    fat_g: 1
+    fiber_g: 3
+
+  - id: pasta_aldente_wholewheat
+    name: Whole-wheat pasta, al dente
+    category: pasta
+    portion: 1 cup cooked
+    carb_g: 37
+    protein_g: 8
+    fat_g: 2
+    fiber_g: 6
+    note: Cooked firm rather than soft, which slows breakdown.
+
+  - id: pasta_chickpea
+    name: Chickpea pasta
+    category: pasta
+    portion: 1 cup cooked
+    carb_g: 32
+    protein_g: 13
+    fat_g: 4
+    fiber_g: 8
+
+  # ------------------------------------------------------------- potato
+  - id: potato_mashed
+    name: Mashed potato
+    category: potato
+    portion: 1 cup
+    carb_g: 36
+    protein_g: 4
+    fat_g: 6
+    fiber_g: 3
+
+  - id: potato_roast_wedges
+    name: Roasted potato wedges, skin on
+    category: potato
+    portion: 1 cup
+    carb_g: 34
+    protein_g: 4
+    fat_g: 7
+    fiber_g: 5
+    note: Skin on and left in pieces rather than mashed.
+
+  - id: sweet_potato
+    name: Roasted sweet potato
+    category: potato
+    portion: 1 medium
+    carb_g: 27
+    protein_g: 2
+    fat_g: 0
+    fiber_g: 4
+
+  # --------------------------------------------------------------- fruit
+  - id: juice_orange
+    name: Orange juice
+    category: fruit
+    portion: 8 oz
+    carb_g: 26
+    protein_g: 2
+    fat_g: 0
+    fiber_g: 0
+    note: The fiber has been removed, so it arrives quickly.
+
+  - id: orange_whole
+    name: Whole orange
+    category: fruit
+    portion: 1 large
+    carb_g: 22
+    protein_g: 1
+    fat_g: 0
+    fiber_g: 4
+    note: Same fruit with its fiber still attached.
+
+  - id: banana_ripe
+    name: Ripe banana
+    category: fruit
+    portion: 1 medium
+    carb_g: 27
+    protein_g: 1
+    fat_g: 0
+    fiber_g: 3
+
+  - id: berries
+    name: Mixed berries
+    category: fruit
+    portion: 1 cup
+    carb_g: 17
+    protein_g: 1
+    fat_g: 0
+    fiber_g: 6
+
+  # --------------------------------------------------------------- dairy
+  - id: yogurt_flavored
+    name: Flavoured yogurt
+    category: dairy
+    portion: 6 oz
+    carb_g: 24
+    protein_g: 7
+    fat_g: 2
+    fiber_g: 0
+
+  - id: yogurt_greek_plain
+    name: Plain Greek yogurt
+    category: dairy
+    portion: 6 oz
+    carb_g: 7
+    protein_g: 17
+    fat_g: 4
+    fiber_g: 0
+    note: Strained, so more protein and much less sugar.
+
+  - id: milk_2pct
+    name: 2% milk
+    category: dairy
+    portion: 8 oz
+    carb_g: 12
+    protein_g: 8
+    fat_g: 5
+    fiber_g: 0
+
+  - id: queso_fresco_unpast
+    name: Unpasteurised queso fresco
+    category: dairy
+    portion: 1 oz
+    carb_g: 1
+    protein_g: 6
+    fat_g: 6
+    fiber_g: 0
+    safety_flags: [unpasteurized]
+
+  # ------------------------------------------------------- protein adds
+  - id: eggs_two
+    name: Two eggs
+    category: protein_add
+    portion: 2 large
+    carb_g: 1
+    protein_g: 13
+    fat_g: 10
+    fiber_g: 0
+
+  - id: chicken_breast
+    name: Grilled chicken
+    category: protein_add
+    portion: 4 oz
+    carb_g: 0
+    protein_g: 35
+    fat_g: 4
+    fiber_g: 0
+
+  - id: black_beans
+    name: Black beans
+    category: protein_add
+    portion: 1/2 cup
+    carb_g: 20
+    protein_g: 8
+    fat_g: 0
+    fiber_g: 8
+    note: Protein and fiber together, and it counts toward the day's carbohydrate.
+
+  - id: cottage_cheese
+    name: Cottage cheese
+    category: protein_add
+    portion: 1/2 cup
+    carb_g: 4
+    protein_g: 14
+    fat_g: 2
+    fiber_g: 0
+
+  - id: salmon
+    name: Baked salmon
+    category: protein_add
+    portion: 4 oz
+    carb_g: 0
+    protein_g: 29
+    fat_g: 12
+    fiber_g: 0
+    note: Low mercury, and a good source of DHA in pregnancy.
+
+  - id: swordfish
+    name: Swordfish
+    category: protein_add
+    portion: 4 oz
+    carb_g: 0
+    protein_g: 28
+    fat_g: 6
+    fiber_g: 0
+    safety_flags: [high_mercury]
+
+  - id: deli_turkey_cold
+    name: Cold deli turkey
+    category: protein_add
+    portion: 3 oz
+    carb_g: 2
+    protein_g: 18
+    fat_g: 3
+    fiber_g: 0
+    safety_flags: [deli_unheated]
+
+  - id: liver_pate
+    name: Liver pate
+    category: protein_add
+    portion: 2 tbsp
+    carb_g: 2
+    protein_g: 6
+    fat_g: 12
+    fiber_g: 0
+    safety_flags: [high_vitamin_a]
+
+  # ------------------------------------------------- vegetable and fat
+  - id: side_salad
+    name: Green salad
+    category: veg_add
+    portion: 2 cups with vinaigrette
+    carb_g: 6
+    protein_g: 2
+    fat_g: 7
+    fiber_g: 3
+
+  - id: roasted_veg
+    name: Roasted vegetables
+    category: veg_add
+    portion: 1 cup
+    carb_g: 11
+    protein_g: 3
+    fat_g: 5
+    fiber_g: 4
+
+  - id: avocado_half
+    name: Half an avocado
+    category: fat_add
+    portion: 1/2 medium
+    carb_g: 6
+    protein_g: 1
+    fat_g: 10
+    fiber_g: 5
+
+  - id: almonds
+    name: Almonds
+    category: fat_add
+    portion: 1 oz (23 nuts)
+    carb_g: 6
+    protein_g: 6
+    fat_g: 14
+    fiber_g: 4
+
+  - id: olive_oil
+    name: Olive oil
+    category: fat_add
+    portion: 1 tbsp
+    carb_g: 0
+    protein_g: 0
+    fat_g: 14
+    fiber_g: 0
+
+  # ------------------------------------------------------------ drinks
+  - id: coffee_large
+    name: Large coffee
+    category: beverage
+    portion: 16 oz
+    carb_g: 0
+    protein_g: 0
+    fat_g: 0
+    fiber_g: 0
+    caffeine_mg: 190
+
+  - id: wine_glass
+    name: Glass of wine
+    category: beverage
+    portion: 5 oz
+    carb_g: 4
+    protein_g: 0
+    fat_g: 0
+    fiber_g: 0
+    safety_flags: [alcohol]

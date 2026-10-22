@@ -1,0 +1,1704 @@
+<title>IGT Coach</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+/* Layout: a phone on a clinical workbench. The app lives inside the device
+   frame; the study scaffolding -- arm, data source, screen index, reviewer
+   notes -- sits outside it, so nobody mistakes the demo controls for the
+   product. Palette validated for CVD separation and contrast in both themes. */
+:root{
+  --paper:#F7F3F1; --surface:#FFFFFF; --sunken:#EFE9E6;
+  --ink:#241B23; --ink-2:#584B55; --ink-3:#8A7C85;
+  --rule:#E2D8D4; --rule-2:#CFC2BC;
+  --series-1:#8E2F55;        /* as planned */
+  --series-2:#1F6F6B;        /* with this change */
+  --band:#C2A87E;            /* her usual range -- a reference fill, never a series */
+  --attention:#B06A1F;       /* status only, always with a text label */
+  --shadow:0 1px 2px rgba(36,27,35,.06),0 8px 24px rgba(36,27,35,.07);
+  --display:"Fraunces",Georgia,"Times New Roman",serif;
+  --body:"Public Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --r:14px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#17131A; --surface:#211B23; --sunken:#2B232E;
+  --ink:#F3EBF0; --ink-2:#C3B5BE; --ink-3:#8E8089;
+  --rule:#352C38; --rule-2:#473B4A;
+  --series-1:#E58AAC; --series-2:#5FC3BB;
+  --band:#6E5E44; --attention:#E8A860;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --paper:#17131A; --surface:#211B23; --sunken:#2B232E;
+  --ink:#F3EBF0; --ink-2:#C3B5BE; --ink-3:#8E8089;
+  --rule:#352C38; --rule-2:#473B4A;
+  --series-1:#E58AAC; --series-2:#5FC3BB;
+  --band:#6E5E44; --attention:#E8A860;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);
+  -webkit-font-smoothing:antialiased;line-height:1.5}
+.wrap{padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:22px 48px;max-width:1240px;margin:0 auto}
+h1,h2,h3,h4{font-family:var(--display);font-weight:500;text-wrap:balance;margin:0;
+  font-optical-sizing:auto}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-3);font-weight:600}
+
+/* ---------------------------------------------------- workbench chrome */
+.masthead{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;
+  justify-content:space-between;border-bottom:1px solid var(--rule);
+  padding-bottom:16px;margin-bottom:20px}
+.masthead h1{font-size:clamp(22px,3vw,30px);letter-spacing:-.01em}
+.masthead p{margin:4px 0 0;color:var(--ink-2);font-size:14px;max-width:62ch}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.ctl{display:flex;align-items:center;gap:0;background:var(--sunken);
+  border:1px solid var(--rule);border-radius:999px;padding:3px}
+.ctl button{font:inherit;font-size:12.5px;font-weight:600;border:0;cursor:pointer;
+  background:transparent;color:var(--ink-2);padding:6px 13px;border-radius:999px;
+  white-space:nowrap}
+.ctl button[aria-pressed="true"]{background:var(--surface);color:var(--ink);
+  box-shadow:0 1px 2px rgba(0,0,0,.1)}
+.ctl button:focus-visible{outline:2px solid var(--series-1);outline-offset:2px}
+.ctl-label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink-3);font-weight:600;padding:0 8px 0 2px}
+
+.stage{display:grid;grid-template-columns:minmax(0,320px) minmax(0,1fr);
+  gap:28px;align-items:start}
+@media (max-width:880px){.stage{grid-template-columns:minmax(0,1fr)}}
+
+/* ------------------------------------------------------------- phone */
+.device{background:var(--ink);border-radius:36px;padding:10px;
+  box-shadow:var(--shadow);position:sticky;top:12px}
+@media (max-width:880px){.device{position:static;border-radius:28px;padding:8px;
+  max-width:420px;margin:0 auto}}
+.screen{background:var(--surface);border-radius:28px;overflow:hidden;
+  height:660px;display:flex;flex-direction:column;position:relative}
+@media (max-width:880px){.screen{height:620px;border-radius:22px}}
+.statusbar{display:flex;justify-content:space-between;align-items:center;
+  padding:9px 18px 5px;font-size:11px;color:var(--ink-3);font-family:var(--mono)}
+.appbar{display:flex;align-items:center;gap:10px;padding:4px 18px 10px;
+  border-bottom:1px solid var(--rule)}
+.appbar .mark{width:24px;height:24px;border-radius:7px;background:var(--series-1);
+  display:grid;place-items:center;flex:none}
+.appbar .mark svg{width:14px;height:14px}
+.appbar strong{font-family:var(--display);font-size:15px;font-weight:600;
+  letter-spacing:-.01em}
+.appbar .wk{margin-left:auto;font-family:var(--mono);font-size:11.5px;
+  color:var(--ink-3)}
+.view{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:16px 18px 18px;
+  display:flex;flex-direction:column;gap:14px}
+/* The view is a flex column, so its children would otherwise shrink to fit
+   and collapse scroll boxes to a sliver. */
+.view>*{flex:none}
+.view::-webkit-scrollbar{width:6px}
+.view::-webkit-scrollbar-thumb{background:var(--rule-2);border-radius:3px}
+.tabbar{display:flex;border-top:1px solid var(--rule);background:var(--surface)}
+.tabbar button{flex:1;font:inherit;font-size:10px;font-weight:600;border:0;
+  background:transparent;color:var(--ink-3);cursor:pointer;padding:9px 2px 11px;
+  display:flex;flex-direction:column;align-items:center;gap:4px}
+.tabbar button[aria-pressed="true"]{color:var(--series-1)}
+.tabbar svg{width:18px;height:18px}
+.tabbar button:focus-visible{outline:2px solid var(--series-1);outline-offset:-3px}
+
+.scr-title{font-family:var(--display);font-size:20px;font-weight:600;
+  letter-spacing:-.01em;line-height:1.25}
+.lede{color:var(--ink-2);font-size:13.5px;margin:0}
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:var(--r);
+  padding:13px 14px}
+.card.sunk{background:var(--sunken);border-color:transparent}
+.card h4{font-size:13px;font-weight:600;font-family:var(--body);margin-bottom:5px}
+.card p{margin:0;font-size:13px;color:var(--ink-2)}
+.hair{height:1px;background:var(--rule);border:0;margin:2px 0}
+
+/* big readout */
+.readout{display:flex;align-items:baseline;gap:9px}
+.readout .big{font-family:var(--mono);font-size:50px;font-weight:500;
+  letter-spacing:-.03em;line-height:1}
+.readout .unit{font-family:var(--mono);font-size:13px;color:var(--ink-3)}
+.readout .arrow{font-size:26px;color:var(--ink-2);line-height:1}
+
+.kv{display:grid;grid-template-columns:1fr auto;gap:5px 12px;font-size:13px}
+.kv dt{color:var(--ink-2);min-width:0}
+.kv dd{margin:0;font-family:var(--mono);font-variant-numeric:tabular-nums;
+  text-align:right;white-space:nowrap}
+
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;
+  font-weight:600;padding:3px 9px;border-radius:999px;background:var(--sunken);
+  color:var(--ink-2);border:1px solid var(--rule)}
+.pill.attn{color:var(--attention);border-color:color-mix(in srgb,var(--attention) 40%,transparent)}
+.pill .dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex:none}
+
+.btn{font:inherit;font-size:14px;font-weight:600;border:0;border-radius:11px;
+  padding:11px 16px;cursor:pointer;background:var(--series-1);color:#fff;
+  width:100%;text-align:center}
+:root[data-theme="dark"] .btn,
+:root:not([data-theme="light"]) .btn{color:#17131A}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .btn{color:#fff}}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--rule-2)}
+.btn.quiet{background:var(--sunken);color:var(--ink);border:1px solid var(--rule)}
+.btn:focus-visible{outline:2px solid var(--series-2);outline-offset:2px}
+.btnrow{display:flex;gap:8px}
+
+.chip{font:inherit;font-size:12.5px;font-weight:500;border:1px solid var(--rule-2);
+  background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 11px;
+  cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.chip[aria-pressed="true"]{background:var(--series-2);border-color:var(--series-2);
+  color:#fff}
+:root[data-theme="dark"] .chip[aria-pressed="true"]{color:#17131A}
+.chip:focus-visible{outline:2px solid var(--series-1);outline-offset:2px}
+.chip.blocked{opacity:.55;cursor:not-allowed;text-decoration:line-through}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+
+.sugg{border:1px solid var(--rule);border-radius:12px;padding:11px 12px;
+  display:flex;flex-direction:column;gap:7px;background:var(--surface)}
+.sugg .top{display:flex;gap:9px;align-items:flex-start}
+.sugg .kind{font-size:10px;font-weight:700;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--series-2);flex:none;padding-top:2px}
+.sugg h5{margin:0;font-size:13.5px;font-weight:600;line-height:1.35}
+.sugg p{margin:0;font-size:12.5px;color:var(--ink-2)}
+.sugg .num{font-family:var(--mono);font-size:11.5px;color:var(--ink-3)}
+
+.note{border-left:3px solid var(--band);background:var(--sunken);
+  border-radius:0 10px 10px 0;padding:10px 12px;font-size:12.5px;color:var(--ink-2)}
+.note strong{color:var(--ink)}
+
+/* ------------------------------------------------------- reviewer rail */
+.rail{display:flex;flex-direction:column;gap:16px;min-width:0}
+.panel{background:var(--surface);border:1px solid var(--rule);
+  border-radius:var(--r);padding:18px 20px}
+.panel h2{font-size:17px;margin-bottom:3px}
+.panel h3{font-size:14px;font-family:var(--body);font-weight:700;margin:14px 0 6px}
+.panel p{font-size:13.5px;color:var(--ink-2);margin:0 0 9px;max-width:72ch}
+.panel ul{margin:0 0 9px;padding-left:18px;font-size:13.5px;color:var(--ink-2);
+  max-width:72ch}
+.panel li{margin-bottom:4px}
+.panel li::marker{color:var(--ink-3)}
+.cite{font-size:12px;color:var(--ink-3);font-family:var(--mono)}
+.index{display:flex;flex-wrap:wrap;gap:6px}
+.index button{font:inherit;font-size:12px;font-weight:500;border:1px solid var(--rule);
+  background:var(--surface);color:var(--ink-2);border-radius:8px;padding:6px 10px;
+  cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.index button[aria-pressed="true"]{border-color:var(--series-1);color:var(--ink);
+  background:color-mix(in srgb,var(--series-1) 9%,transparent)}
+.index button:focus-visible{outline:2px solid var(--series-1);outline-offset:2px}
+.index .star{color:var(--series-1);font-size:10px}
+.index .n{font-family:var(--mono);font-size:10.5px;color:var(--ink-3)}
+
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:10px}
+.tile{background:var(--sunken);border-radius:11px;padding:11px 12px}
+.tile .lab{font-size:11px;color:var(--ink-3);font-weight:600;letter-spacing:.03em}
+.tile .val{font-family:var(--mono);font-size:21px;font-weight:500;margin-top:3px;
+  letter-spacing:-.02em}
+.tile .sub{font-size:11px;color:var(--ink-3);margin-top:1px}
+
+table.data{width:100%;border-collapse:collapse;font-size:13px}
+table.data th,table.data td{text-align:left;padding:7px 9px;
+  border-bottom:1px solid var(--rule)}
+table.data th{font-size:11px;text-transform:uppercase;letter-spacing:.07em;
+  color:var(--ink-3);font-weight:700}
+table.data td.num{font-family:var(--mono);text-align:right;
+  font-variant-numeric:tabular-nums}
+.scroll-x{overflow-x:auto}
+
+.legend{display:flex;flex-wrap:wrap;gap:13px;font-size:12px;color:var(--ink-2)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.swatch{width:14px;height:3px;border-radius:2px;flex:none}
+.swatch.band{height:11px;width:14px;border-radius:3px;
+  background:color-mix(in srgb,var(--band) 45%,transparent);
+  border:1px solid color-mix(in srgb,var(--band) 70%,transparent)}
+
+figure{margin:0}
+figcaption{font-size:12px;color:var(--ink-3);margin-top:6px}
+svg .grid{stroke:var(--rule);stroke-width:1}
+svg .axis{fill:var(--ink-3);font-size:10px;font-family:var(--mono)}
+svg .lbl{fill:var(--ink-2);font-size:10.5px;font-family:var(--body);font-weight:600}
+
+.chartwrap{position:relative}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--paper);
+  font-family:var(--mono);font-size:11px;padding:5px 8px;border-radius:7px;
+  white-space:nowrap;transform:translate(-50%,-130%);opacity:0;transition:opacity .1s;
+  z-index:5}
+.tip.on{opacity:1}
+
+.flagcard{border:1px solid var(--rule);border-radius:12px;background:var(--surface);
+  overflow:hidden}
+.flagcard .hd{display:flex;gap:10px;align-items:center;padding:11px 13px;
+  background:var(--sunken);border-bottom:1px solid var(--rule)}
+.flagcard .hd .who{font-weight:700;font-size:13px}
+.flagcard .hd .st{margin-left:auto;font-size:11px;font-weight:600;color:var(--ink-2)}
+.flagcard .bd{padding:12px 13px;display:flex;flex-direction:column;gap:10px}
+.feat{display:grid;grid-template-columns:1fr auto;gap:3px 10px;font-size:12.5px;
+  align-items:baseline}
+.feat .n{color:var(--ink-2)}
+.feat .v{font-family:var(--mono);text-align:right;font-weight:500}
+.feat .note{grid-column:1/-1;font-size:11.5px;color:var(--ink-3);
+  margin:-1px 0 4px}
+
+.banner{border-radius:11px;padding:11px 13px;font-size:13px;
+  border:1px solid color-mix(in srgb,var(--attention) 35%,transparent);
+  background:color-mix(in srgb,var(--attention) 10%,transparent);color:var(--ink)}
+.banner strong{display:flex;align-items:center;gap:7px;font-size:13px;
+  margin-bottom:4px;color:var(--attention)}
+.banner.floor{border-color:color-mix(in srgb,var(--series-2) 40%,transparent);
+  background:color-mix(in srgb,var(--series-2) 10%,transparent)}
+.banner.floor strong{color:var(--series-2)}
+
+.offscr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <div>
+      <h1>IGT Coach</h1>
+      <p>Interactive mock-up for IRB review. A three-arm study of AI-guided
+         continuous glucose monitoring in pregnancies with intermediate glucose
+         intolerance &mdash; abnormal 1-hour screen, normal 3-hour test.
+         Texas Children&rsquo;s Hospital and Baylor College of Medicine.</p>
+    </div>
+    <div class="controls">
+      <div class="ctl" role="group" aria-label="Study arm">
+        <span class="ctl-label">Arm</span>
+        <button id="armMonitor" aria-pressed="false">Monitor only</button>
+        <button id="armModel" aria-pressed="true">Monitor + model</button>
+      </div>
+      <div class="ctl" role="group" aria-label="View">
+        <span class="ctl-label">View</span>
+        <button id="viewApp" aria-pressed="true">Participant app</button>
+        <button id="viewRd" aria-pressed="false">Dietitian console</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="stage" id="stageApp">
+    <div class="device">
+      <div class="screen">
+        <div class="statusbar"><span id="clock">9:41</span><span>CGM &middot; connected</span></div>
+        <div class="appbar">
+          <span class="mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 15c3 0 4-7 7-7s3 9 6 9 3-5 7-5"/>
+            </svg>
+          </span>
+          <strong>IGT Coach</strong>
+          <span class="wk" id="wkLabel">W28+2</span>
+        </div>
+        <div class="view" id="view" tabindex="-1"></div>
+        <nav class="tabbar" id="tabbar" aria-label="App sections"></nav>
+      </div>
+    </div>
+
+    <div class="rail">
+      <section class="panel">
+        <span class="eyebrow">Screen index</span>
+        <h2 id="railTitle">What the reviewer is looking at</h2>
+        <div class="index" id="screenIndex" style="margin:12px 0 4px"></div>
+      </section>
+      <section class="panel" id="railNote"></section>
+      <section class="panel" id="railProv"></section>
+    </div>
+  </div>
+
+  <div id="stageRd" hidden></div>
+</div>
+
+<script>
+(function () {
+"use strict";
+
+/* ====================================================================
+   Data. The page is self-sufficient: it renders from data.json, which is
+   frozen synthetic output. If the FastAPI server is running, live Dexcom
+   sandbox calls become available on the Connect screen; nothing else
+   depends on a network.
+   ==================================================================== */
+var D = null, LIVE = false;
+var ARM = "model";          // 'monitor' = CGM only | 'model' = CGM + algorithm
+var SCREEN = "today";
+var SEL = ["bagel_plain", "juice_orange"];
+var SLOTMIN = 7 * 60 + 30;
+// Live Dexcom sandbox readings, when the local server is connected. Kept
+// separate from the demo cohort and always labelled, because the sandbox
+// accounts are not pregnant and must never be mistaken for clinical content.
+var LIVEDATA = null;
+
+var $ = function (s, r) { return (r || document).querySelector(s); };
+var el = function (t, c, h) {
+  var n = document.createElement(t);
+  if (c) n.className = c;
+  if (h != null) n.innerHTML = h;
+  return n;
+};
+var esc = function (s) {
+  return String(s).replace(/[&<>"]/g, function (c) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+  });
+};
+var n1 = function (x) { return Math.round(x * 10) / 10; };
+
+/* ====================================================================
+   The meal model, ported from server/synth.py. Three levers, exactly the
+   ones the protocol names: which carbohydrate, in what combination, at
+   what time of day. Kept numerically identical to the Python so the demo
+   and the server agree; tests/test_parity.py asserts that.
+   ==================================================================== */
+var MODEL = {
+  circadian: function (minute) {
+    var h = (minute / 60) % 24;
+    return 1 + 0.30 * Math.cos((h - 7.5) * Math.PI / 12);
+  },
+  gestational: function (week) { return 1 + 0.016 * Math.max(0, week - 20); },
+  netCarb: function (m) { return Math.max(0, m.carb - 0.5 * m.fiber); },
+  damping: function (m) {
+    var nc = Math.max(this.netCarb(m), 1);
+    var pr = m.protein / nc, fr = m.fat / nc, fb = m.fiber / Math.max(m.carb, 1);
+    var d = 1 / (1 + 0.55 * Math.min(pr, 1.2) + 0.28 * Math.min(fr, 1.2)
+                   + 0.9 * Math.min(fb, 0.4));
+    return Math.max(0.45, Math.min(1, d));
+  },
+  peakShift: function (m) {
+    var nc = Math.max(this.netCarb(m), 1);
+    return 18 * Math.min(m.fat / nc, 1.2) + 8 * Math.min(m.protein / nc, 1.2);
+  },
+  kernel: function (n, peakAt, spread) {
+    var k = Math.max(peakAt / spread, 1.05), out = [], mx = 0, i, y;
+    for (i = 0; i < n; i++) {
+      y = Math.pow(i, k - 1) * Math.exp(-i / spread);
+      out.push(y); if (y > mx) mx = y;
+    }
+    return mx > 0 ? out.map(function (v) { return v / mx; }) : out;
+  },
+  curve: function (m, profile, week, fasting, horizon) {
+    horizon = horizon || 180;
+    var p = D.profiles[profile], n = Math.floor(horizon / 5);
+    var dose = 58 * (1 - Math.exp(-this.netCarb(m) / 42));
+    var amp = p.gain * dose * this.damping(m)
+            * this.circadian(m.minute) * this.gestational(week);
+    var peakAt = (p.delay + this.peakShift(m)) / 5;
+    var kern = this.kernel(n, peakAt, Math.max(peakAt / 1.9, 2));
+    var pts = kern.map(function (k) { return fasting + amp * k; });
+    var mx = Math.max.apply(null, pts);
+    return { mgdl: pts, peak: n1(mx), peakMin: pts.indexOf(mx) * 5,
+             excursion: n1(mx - fasting) };
+  }
+};
+
+function foodById(id) {
+  for (var i = 0; i < D.foods.length; i++) if (D.foods[i].id === id) return D.foods[i];
+  return null;
+}
+function sumItems(ids) {
+  var m = { minute: SLOTMIN, carb: 0, protein: 0, fat: 0, fiber: 0, caffeine: 0 };
+  ids.forEach(function (id) {
+    var f = foodById(id); if (!f) return;
+    m.carb += f.carb_g; m.protein += f.protein_g;
+    m.fat += f.fat_g; m.fiber += f.fiber_g;
+    m.caffeine += (f.caffeine_mg || 0);
+  });
+  return m;
+}
+function slotFor(minute) {
+  var h = (minute / 60) % 24;
+  if (h < 10.5) return "breakfast";
+  if (h < 11.5) return "snack";
+  if (h < 15) return "lunch";
+  if (h < 17.5) return "snack";
+  return "dinner";
+}
+function hhmm(minute) {
+  var h = Math.floor(minute / 60) % 24, m = minute % 60;
+  var ap = h < 12 ? "am" : "pm", hh = (h % 12) || 12;
+  return hh + ":" + (m < 10 ? "0" : "") + m + ap;
+}
+
+/* ====================================================================
+   Swap engine, ported from server/swaps.py.
+
+   Levers are tried least-restrictive first, and the order is the whole
+   point: sequence and timing change no food at all, add puts MORE food on
+   the plate, and only then does a swap change a component.
+
+   Hard floor: 175 g carbohydrate/day (IOM). Only a suggestion that REMOVES
+   carbohydrate can breach it. On a day already short, every reduction is
+   suppressed and the engine can only add.
+   ==================================================================== */
+var ENGINE = {
+  leadItem: function (ids) {
+    var best = null, score = 0;
+    ids.forEach(function (id) {
+      var f = foodById(id); if (!f) return;
+      if (["veg_add", "protein_add", "dairy", "fat_add"].indexOf(f.category) < 0) return;
+      var s = f.protein_g + 2 * f.fiber_g;
+      if (s > score) { score = s; best = f.name; }
+    });
+    return score >= 6 ? best : null;
+  },
+  propose: function (ids, minute, week, fasting, carbsSoFar, carbsRest) {
+    var profile = D.participant.profile, slot = slotFor(minute);
+    var base = sumItems(ids); base.minute = minute;
+    var bc = MODEL.curve(base, profile, week, fasting);
+    var dayCarb = (carbsSoFar || 0) + base.carb + (carbsRest || 0);
+    var out = [], self = this;
+
+    // 1. SEQUENCE -- same food, different order.
+    var lead = this.leadItem(ids);
+    if (lead) {
+      var seqMeal = { minute: minute, carb: base.carb, protein: base.protein * 1.9,
+                      fat: base.fat * 1.25, fiber: base.fiber * 1.4 };
+      var sc = MODEL.curve(seqMeal, profile, week, fasting);
+      out.push({ kind: "sequence", title: "Start with the " + lead.toLowerCase(),
+        detail: "Same meal, same amount, different order. The "
+                + lead.toLowerCase() + " first, then the rest.",
+        carbDelta: 0, peak: sc.peak, basePeak: bc.peak,
+        why: "Order of eating; carbohydrate unchanged at "
+             + Math.round(base.carb) + " g.", curve: sc });
+    }
+
+    // 2. TIMING -- deliberately not offered at breakfast. "Move breakfast to
+    //    lunchtime" is "skip breakfast", which is the pattern to avoid.
+    if (slot === "snack" || slot === "lunch") {
+      var later = Math.max(minute, 13 * 60);
+      if (MODEL.circadian(minute) > MODEL.circadian(later) * 1.06) {
+        var lm = Object.assign({}, base, { minute: later });
+        var lc = MODEL.curve(lm, profile, week, fasting);
+        out.push({ kind: "timing", title: "This lands softer later in the day",
+          detail: "Insulin sensitivity is lowest in the morning in pregnancy. "
+                  + "The same thing at " + hhmm(later) + " instead of " + hhmm(minute) + ".",
+          carbDelta: 0, peak: lc.peak, basePeak: bc.peak,
+          why: "Time of day; " + Math.round((MODEL.circadian(minute)
+               / MODEL.circadian(later) - 1) * 100) + "% more response at "
+               + hhmm(minute) + " than at " + hhmm(later) + ".", curve: lc });
+      }
+    }
+
+    // 3. ADD -- more food, not less.
+    D.additions.forEach(function (a) {
+      var f = foodById(a.food);
+      if (!f || f.blocked_reason) return;
+      var slots = a.slots || ["breakfast", "lunch", "dinner", "snack"];
+      if (slots.indexOf(slot) < 0) return;
+      var cand = ids.concat([a.food]);
+      var cm = sumItems(cand); cm.minute = minute;
+      var cc = MODEL.curve(cm, profile, week, fasting);
+      if (cc.peak < bc.peak - 3) {
+        out.push({ kind: "add", title: a.title, detail: a.detail,
+          carbDelta: n1(cm.carb - base.carb), peak: cc.peak, basePeak: bc.peak,
+          why: "Carbohydrate-to-protein ratio falls from "
+               + (base.carb / Math.max(base.protein, 1)).toFixed(1) + " to "
+               + (cm.carb / Math.max(cm.protein, 1)).toFixed(1) + ".", curve: cc });
+      }
+    });
+
+    // 4. SWAP -- in-category only, so the meal stays recognisable.
+    ids.forEach(function (id, i) {
+      var alts = D.swaps[id] || [], a = foodById(id);
+      alts.forEach(function (altId) {
+        var b = foodById(altId);
+        if (!b || b.blocked_reason || !a || a.category !== b.category) return;
+        var cand = ids.slice(); cand[i] = altId;
+        var cm = sumItems(cand); cm.minute = minute;
+        var delta = n1(cm.carb - base.carb);
+        if (delta < 0 && dayCarb + delta < D.constraints.carb_floor_g) return;
+        var cc = MODEL.curve(cm, profile, week, fasting);
+        if (cc.peak < bc.peak - 4) {
+          out.push({ kind: "swap", title: b.name + " instead of " + a.name,
+            detail: b.note || "Same kind of food, steadier release.",
+            carbDelta: delta, peak: cc.peak, basePeak: bc.peak,
+            why: "Same food category (" + a.category + "); fiber "
+                 + (b.fiber_g - a.fiber_g >= 0 ? "+" : "")
+                 + Math.round(b.fiber_g - a.fiber_g) + " g, net carbohydrate "
+                 + (delta >= 0 ? "+" : "") + Math.round(delta) + " g.", curve: cc });
+        }
+      });
+    });
+
+    if (dayCarb < D.constraints.carb_caution_g) {
+      out = out.filter(function (s) { return s.carbDelta >= 0; });
+    }
+    var order = { sequence: 0, timing: 1, add: 2, swap: 3 };
+    out.sort(function (x, y) {
+      return order[x.kind] - order[y.kind] || (y.basePeak - y.peak) - (x.basePeak - x.peak);
+    });
+    // De-duplicate by title: a meal containing the same food twice would
+    // otherwise produce the same swap twice.
+    var chosen = [], seen = {}, titles = {};
+    for (var i = 0; i < out.length; i++) {
+      var k = out[i].kind;
+      if (titles[out[i].title]) continue;
+      if ((seen[k] || 0) >= 2) continue;
+      titles[out[i].title] = 1;
+      seen[k] = (seen[k] || 0) + 1;
+      chosen.push(out[i]);
+      if (chosen.length === D.constraints.max_suggestions) break;
+    }
+    // The floor is asserted here, not assumed.
+    chosen.forEach(function (s) {
+      if (s.carbDelta < 0 && dayCarb + s.carbDelta < D.constraints.carb_floor_g) {
+        throw new Error("Guardrail: " + s.title + " breaches the carbohydrate floor.");
+      }
+    });
+    return { meal: base, curve: bc, suggestions: chosen,
+             day: this.dayStatus(dayCarb), slot: slot };
+  },
+  dayStatus: function (g) {
+    var F = D.constraints.carb_floor_g, C = D.constraints.carb_caution_g;
+    if (g < F) return { level: "floor", g: Math.round(g),
+      msg: "Today is below the " + F + " g of carbohydrate pregnancy needs. "
+           + "Nothing that reduces it will be suggested." };
+    if (g < C) return { level: "caution", g: Math.round(g),
+      msg: "Close to the " + F + " g daily minimum. Only suggestions that add "
+           + "food are offered." };
+    return { level: "ok", g: Math.round(g),
+      msg: "Carbohydrate for the day is in a healthy range for pregnancy." };
+  }
+};
+
+/* ====================================================================
+   Charts. Inline SVG, drawn to scale, theme-aware, with a crosshair.
+   One series needs no legend (the title names it); two series get a
+   legend AND direct labels, so identity is never colour alone.
+   ==================================================================== */
+function lineChart(opts) {
+  var W = opts.width || 288, H = opts.height || 150;
+  var P = { t: 17, r: 12, b: 20, l: 30 };
+  var lo = opts.lo != null ? opts.lo : 50, hi = opts.hi != null ? opts.hi : 220;
+  var xs = opts.xMax || 1;
+  var X = function (i) { return P.l + (i / xs) * (W - P.l - P.r); };
+  var Y = function (v) {
+    return P.t + (1 - (Math.max(lo, Math.min(hi, v)) - lo) / (hi - lo)) * (H - P.t - P.b);
+  };
+  var s = ['<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" role="img" aria-label="'
+           + esc(opts.alt || "Glucose over time") + '">'];
+
+  // gridlines, recessive, every label naming a value the chart reaches
+  (opts.yTicks || [70, 110, 150, 190]).forEach(function (v) {
+    if (v < lo || v > hi) return;
+    s.push('<line class="grid" x1="' + P.l + '" y1="' + Y(v) + '" x2="' + (W - P.r)
+           + '" y2="' + Y(v) + '"/>');
+    s.push('<text class="axis" x="' + (P.l - 5) + '" y="' + (Y(v) + 3.5)
+           + '" text-anchor="end">' + v + '</text>');
+  });
+
+  // her usual range: a reference fill, not a series
+  if (opts.band && opts.band.length) {
+    var up = [], dn = [];
+    opts.band.forEach(function (b, i) { up.push(X(i) + "," + Y(b[1])); });
+    for (var j = opts.band.length - 1; j >= 0; j--) dn.push(X(j) + "," + Y(opts.band[j][0]));
+    s.push('<polygon points="' + up.concat(dn).join(" ")
+           + '" fill="var(--band)" fill-opacity="0.30" stroke="none"/>');
+  }
+
+  (opts.series || []).forEach(function (ser) {
+    var d = "", started = false;
+    ser.values.forEach(function (v, i) {
+      if (v == null) { started = false; return; }   // never bridge a data gap
+      d += (started ? "L" : "M") + X(i).toFixed(1) + "," + Y(v).toFixed(1) + " ";
+      started = true;
+    });
+    s.push('<path d="' + d + '" fill="none" stroke="' + ser.color
+           + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"'
+           + (ser.dash ? ' stroke-dasharray="4 3"' : "") + '/>');
+    if (ser.label) {
+      // Label at the peak, not the right edge: more informative, and it keeps
+      // two series from stacking on top of each other against the frame.
+      var pk = 0, pv = -1e9, q;
+      for (q = 0; q < ser.values.length; q++) {
+        if (ser.values[q] != null && ser.values[q] > pv) { pv = ser.values[q]; pk = q; }
+      }
+      var lx = Math.min(Math.max(X(pk), P.l + 26), W - P.r - 26);
+      s.push('<text class="lbl" x="' + lx + '" y="'
+             + (Y(pv) + (ser.labelBelow ? 21 : -8)) + '" text-anchor="middle" fill="'
+             + ser.color + '">' + esc(ser.label) + '</text>');
+    }
+  });
+
+  // her own threshold -- a reference line, always carrying a text label.
+  // Left-aligned so it cannot collide with the series labels at the peak.
+  if (opts.threshold != null && opts.threshold >= lo && opts.threshold <= hi) {
+    s.push('<line x1="' + P.l + '" y1="' + Y(opts.threshold) + '" x2="' + (W - P.r)
+           + '" y2="' + Y(opts.threshold)
+           + '" stroke="var(--ink-3)" stroke-width="1" stroke-dasharray="3 3"/>');
+    // Backing chip, so the label stays readable where the trace crosses it.
+    var tlab = "your usual high, " + Math.round(opts.threshold);
+    var tw = tlab.length * 5.3 + 6;
+    s.push('<rect x="' + (P.l + 1) + '" y="' + (Y(opts.threshold) - 13)
+           + '" width="' + tw + '" height="12" rx="3" fill="var(--surface)" '
+           + 'fill-opacity="0.88"/>');
+    s.push('<text class="axis" x="' + (P.l + 4) + '" y="' + (Y(opts.threshold) - 4)
+           + '" text-anchor="start">' + tlab + '</text>');
+  }
+
+  (opts.xLabels || []).forEach(function (t) {
+    s.push('<text class="axis" x="' + X(t.i) + '" y="' + (H - 6)
+           + '" text-anchor="middle">' + esc(t.l) + '</text>');
+  });
+  (opts.marks || []).forEach(function (m) {
+    s.push('<circle cx="' + X(m.i) + '" cy="' + Y(m.v) + '" r="4" fill="'
+           + (m.color || "var(--series-1)") + '" stroke="var(--surface)" stroke-width="2"/>');
+  });
+  s.push("</svg>");
+  return s.join("");
+}
+
+function attachCrosshair(wrap, values, xs, fmt) {
+  var svg = wrap.querySelector("svg");
+  if (!svg) return;
+  var tip = el("div", "tip");
+  wrap.appendChild(tip);
+  function move(ev) {
+    var r = svg.getBoundingClientRect();
+    var cx = (ev.touches ? ev.touches[0].clientX : ev.clientX) - r.left;
+    var frac = Math.max(0, Math.min(1, (cx / r.width - 30 / 288) / (1 - 40 / 288)));
+    var i = Math.round(frac * xs);
+    var v = values[i];
+    if (v == null) { tip.classList.remove("on"); return; }
+    tip.textContent = fmt(i, v);
+    tip.style.left = cx + "px";
+    tip.style.top = (r.height * 0.42) + "px";
+    tip.classList.add("on");
+  }
+  svg.addEventListener("mousemove", move);
+  svg.addEventListener("touchmove", move, { passive: true });
+  svg.addEventListener("mouseleave", function () { tip.classList.remove("on"); });
+  svg.addEventListener("touchend", function () { tip.classList.remove("on"); });
+}
+
+/* ==================================================================== */
+var ICON = {
+  today: '<path d="M2 15c3 0 4-7 7-7s3 9 6 9 3-5 7-5"/>',
+  plan: '<path d="M12 5v14M5 12h14"/>',
+  week: '<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/>',
+  more: '<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>'
+};
+
+var SCREENS = [
+  { id: "consent",  n: 1, label: "Consent & AI disclosure", star: false },
+  { id: "connect",  n: 2, label: "Connect the sensor", star: false },
+  { id: "runin",    n: 3, label: "Blinded run-in week", star: false },
+  { id: "today",    n: 4, label: "Today", star: true },
+  { id: "plan",     n: 5, label: "Plan a meal", star: true },
+  { id: "compare",  n: 6, label: "How close were we", star: false },
+  { id: "week",     n: 7, label: "This week", star: false },
+  { id: "flagged",  n: 8, label: "Flagged to the dietitian", star: true },
+  { id: "limits",   n: 9, label: "What this app does not do", star: false },
+  { id: "settings", n: 10, label: "Settings & pause", star: false },
+  { id: "withdraw", n: 11, label: "Withdraw & delete", star: true }
+];
+
+var MODEL_ONLY = { plan: 1, compare: 1, flagged: 1 };
+
+/* -------------------------------------------------------- rail copy */
+var NOTES = {
+  consent: {
+    h: "Layered consent, with the AI disclosure on the same screen",
+    p: ["Participants are told in plain language that some of what they read is "
+        + "machine-generated, that it can be wrong, and that it is not advice from "
+        + "their obstetrician. The comprehension check is the Sage Bionetworks "
+        + "pattern: three statements answered before any data is collected.",
+        "The consent text also carries the two facts the Dexcom API forces on us. "
+        + "Scopes are all-or-nothing &mdash; a participant cannot consent to glucose "
+        + "but not events &mdash; and Dexcom keeps its own copy of the data "
+        + "independent of the study."],
+    c: "Wilbanks J, J Law Med Ethics 2018 &middot; UCSF IRB, Mobile Medical Apps guidance"
+  },
+  connect: {
+    h: "The real Dexcom authorisation surface",
+    p: ["This hands off to Dexcom&rsquo;s own OAuth 2.0 login and HIPAA consent "
+        + "page. The study never sees her Dexcom password, and tokens are held "
+        + "server-side, which Dexcom requires.",
+        "Two constraints from the API documentation belong in the protocol. "
+        + "Mobile-app data reaches the web API with a one-hour delay in the US, so "
+        + "this app cannot raise a real-time alert &mdash; and says so. And Limited "
+        + "Access caps at five production users; beyond that needs Dexcom&rsquo;s "
+        + "research route, which is a timeline dependency outside our control."],
+    c: "developer.dexcom.com &middot; v3 API &middot; sandbox verified 22 Oct 2026"
+  },
+  runin: {
+    h: "One blinded week, which is what makes the comparison personal",
+    p: ["Both randomised arms wear a blinded sensor for a week. It trains the "
+        + "model and, more importantly, sets her own baseline. Everything the app "
+        + "says afterwards is measured against her, not against a population "
+        + "threshold.",
+        "That is not only a design preference. No validated CGM target exists "
+        + "for gestational diabetes, let alone for intermediate glucose "
+        + "intolerance. The 2019 international targets (63&ndash;140 mg/dL, &gt;70% "
+        + "time in range) are for type 1 diabetes in pregnancy. Showing a woman "
+        + "with a normal OGTT a pass/fail line against someone else&rsquo;s number "
+        + "would be inventing a diagnosis."],
+    c: "Szmuilowicz et al., J Diabetes Sci Technol 2024, PMID 38606830"
+  },
+  today: {
+    h: "Unblinded, and deliberately without a verdict",
+    p: ["The shaded band is her own range from the run-in week. There is no red "
+        + "zone, no green zone, no &ldquo;in range / out of range&rdquo;, and the "
+        + "word <em>spike</em> appears nowhere in the app.",
+        "A 2026 qualitative study of gestational diabetes care found that protocols "
+        + "focused on &ldquo;dietary surveillance, glucose control and fear-based "
+        + "messaging&rdquo; may precipitate disordered eating. This population has "
+        + "not been told they have a condition at all, so the labelling risk is "
+        + "higher, not lower."],
+    c: "Noori et al., Diabet Med 2026, PMID 41995724"
+  },
+  plan: {
+    h: "The front door, and the novelty claim",
+    p: ["She enters what she is thinking of eating, before she eats it. No "
+        + "postprandial-glucose model has ever been built or validated in "
+        + "pregnancy &mdash; January AI, ZOE and the Weizmann algorithm were all "
+        + "trained on non-pregnant adults, and insulin sensitivity falls across "
+        + "gestation, so they drift week by week.",
+        "Note the wording: <em>meals like this have usually been followed by</em>, "
+        + "never <em>your glucose will reach 158</em>. The January 2026 FDA "
+        + "General Wellness guidance disqualifies products whose outputs "
+        + "&ldquo;prompt or guide specific clinical action&rdquo;; a pattern "
+        + "display is a materially different claim from a forecast of a "
+        + "physiologic value.",
+        "Suggestions are ordered least-restrictive first. Sequence and timing "
+        + "change no food at all; <em>add</em> puts more on the plate; only then "
+        + "does the engine change a component."],
+    c: "FDA General Wellness, 6 Jan 2026 &middot; FDA CDS Software, 29 Jan 2026"
+  },
+  compare: {
+    h: "The model is held to account on the same screen",
+    p: ["Every prediction is shown back against what actually happened. This is "
+        + "the honest version of a prediction feature, and it is also the "
+        + "within-participant accuracy data the analysis needs.",
+        "The first 24 hours of each sensor session are excluded. Dexcom G7 "
+        + "agreement within 20/20 is 78.6% on day 1, rising to 96&ndash;97% by "
+        + "days 4&ndash;10, so day-1 values would bias the accuracy estimate."],
+    c: "Polsky et al., Diabetes Technol Ther 2024;26:307-12, PMID 38315503"
+  },
+  week: {
+    h: "Weekly narrative, never real-time nagging",
+    p: ["Written once a week from a bounded, dietitian-authored library. The "
+        + "language model selects and phrases; it does not generate new "
+        + "nutritional content, and there is no free-text chat anywhere in the "
+        + "pilot.",
+        "A cross-sectional study of five chatbots answering nutrition questions "
+        + "this year found potentially harmful responses in all of them, with "
+        + "&ldquo;vulnerable life stages&rdquo; named as a recurring failure mode. "
+        + "That is the argument for a bounded library rather than open generation."],
+    c: "Zhou et al., Front Public Health 2026, PMID 42609511"
+  },
+  flagged: {
+    h: "The escalation pathway &mdash; the screen the IRB is really buying",
+    p: ["When the model projects that she is crossing her own threshold, it does "
+        + "not tell her what to do. It sends its reasoning to a registered "
+        + "dietitian, who decides what she sees. The dietitian monitors the model "
+        + "rather than holding scheduled visits, so a clinician is always the one "
+        + "in control.",
+        "The participant-facing wording names no condition, calls nothing abnormal "
+        + "or pathological, and states no clinical threshold. It also states the "
+        + "review latency and that the app is not monitored overnight &mdash; "
+        + "because with a one-hour API delay, it cannot be."],
+    c: "Protocol, human-in-the-loop safety architecture"
+  },
+  limits: {
+    h: "The boundary stated in the product, not only in the consent form",
+    p: ["Levels tells its users it should &ldquo;never be used for medication "
+        + "management or dosing decisions&rdquo;; SNAQ states it is not approved "
+        + "as an insulin-dosing tool. Putting the limit where the participant "
+        + "actually reads it is established practice and costs nothing."],
+    c: "Prior art: Levels, SNAQ, Dexcom Stelo"
+  },
+  settings: {
+    h: "A real off switch",
+    p: ["Coaching can be paused without leaving the study, notifications are "
+        + "capped, and nothing is gamified &mdash; no streaks, no badges, no "
+        + "calorie count, no weight tracking. Pausing is logged as an outcome "
+        + "rather than treated as non-adherence.",
+        "The eating-concerns check runs at enrolment and exit, and an active "
+        + "eating disorder is an exclusion."],
+    c: "SCOFF at enrolment and exit; disordered eating as a reportable AE category"
+  },
+  withdraw: {
+    h: "Withdrawal, stated precisely enough to be true",
+    p: ["Three different things happen to three different copies of the data, and "
+        + "the screen says so: what uninstalling deletes, what the study keeps if "
+        + "it has already been analysed, and what Dexcom retains independently of "
+        + "us. Participants can also revoke the connection at Dexcom directly.",
+        "Vague withdrawal language is the most common reason a digital-health "
+        + "protocol comes back from review."],
+    c: "UCSF IRB guidance on data withdrawal in app-based research"
+  }
+};
+
+/* ============================================================ screens */
+function screenConsent() {
+  return [
+    '<h2 class="scr-title">Before you start</h2>',
+    '<p class="lede">Three things to know, then three questions to check we '
+      + 'explained them properly.</p>',
+    card("What this study is asking",
+      "You passed your three-hour glucose test, so you do not have gestational "
+      + "diabetes. You did fail the first screen. We are trying to find out "
+      + "whether a sensor and some guidance in these weeks makes a difference."),
+    card("Some of what you read here is written by a computer",
+      "A model suggests the wording. It can be wrong. It is not advice from your "
+      + "obstetrician, and a registered dietitian reviews anything it flags before "
+      + "it reaches you."),
+    card("Where your data goes",
+      "Dexcom sends us your glucose, calibrations, events and device details. "
+      + "Their authorisation covers all four together &mdash; you cannot choose "
+      + "only some. Dexcom also keeps its own copy, which is not ours to delete."),
+    '<hr class="hair">',
+    '<h4 style="font-family:var(--body);font-size:13px;font-weight:700">'
+      + 'Quick check</h4>',
+    quiz("This app can diagnose gestational diabetes.", false),
+    quiz("A dietitian reviews anything the model flags.", true),
+    quiz("I can stop the coaching and stay in the study.", true),
+    '<button class="btn" data-go="connect">Continue</button>'
+  ].join("");
+}
+
+function quiz(q, ans) {
+  return '<div class="card sunk"><p style="color:var(--ink);font-size:13px;'
+    + 'margin-bottom:8px">' + esc(q) + '</p><div class="btnrow">'
+    + '<button class="btn quiet" data-quiz="' + (ans ? "1" : "0") + '" data-pick="1" '
+    + 'style="font-size:13px;padding:7px">True</button>'
+    + '<button class="btn quiet" data-quiz="' + (ans ? "1" : "0") + '" data-pick="0" '
+    + 'style="font-size:13px;padding:7px">False</button></div>'
+    + '<p class="qfb" style="font-size:12px;margin-top:7px" hidden></p></div>';
+}
+
+function screenConnect() {
+  var users = D.sandbox_users.map(function (u) {
+    return '<tr><td>' + esc(u.label) + '</td><td>'
+      + (u.logs_carbs ? "carbs, exercise, health, insulin"
+                      : "no carbs &mdash; " + esc(u.app)) + '</td></tr>';
+  }).join("");
+  return [
+    '<h2 class="scr-title">Connect your sensor</h2>',
+    '<p class="lede">You will sign in with Dexcom, not with us. We never see your '
+      + 'Dexcom password.</p>',
+    '<div class="card"><h4>Dexcom will ask you to share</h4>'
+      + '<dl class="kv" style="margin:6px 0 0">'
+      + '<dt>Glucose readings</dt><dd>yes</dd>'
+      + '<dt>Calibrations</dt><dd>yes</dd>'
+      + '<dt>Events you log</dt><dd>yes</dd>'
+      + '<dt>Device details</dt><dd>yes</dd></dl>'
+      + '<p style="margin-top:8px;font-size:12.5px">These come as one permission. '
+      + 'Dexcom does not let you pick some and not others.</p></div>',
+    '<div class="note"><strong>Readings arrive about an hour behind.</strong> '
+      + 'That is how the Dexcom service works, not a fault in this app. It means '
+      + 'this app cannot warn you about something happening right now, and it '
+      + 'does not try to.</div>',
+    '<button class="btn" id="dexBtn">Sign in with Dexcom</button>',
+    '<p id="dexState" class="lede" style="font-size:12px;text-align:center"></p>',
+    '<div id="liveBox" hidden><hr class="hair">'
+      + '<span class="eyebrow">Live sandbox</span>'
+      + '<div class="btnrow" style="margin-top:8px">'
+      + '<button class="btn quiet" id="liveOn">Load live readings</button>'
+      + '<button class="btn ghost" id="liveOff">Back to demo</button></div>'
+      + '<p class="lede" style="font-size:12px;margin-top:8px">Pulls real EGVs '
+      + 'from the Dexcom sandbox through the local server. The sandbox accounts '
+      + 'are not pregnant, so this proves the connection, not the clinical '
+      + 'picture.</p></div>',
+    '<hr class="hair">',
+    '<span class="eyebrow">Demo &middot; sandbox accounts</span>',
+    '<div class="scroll-x"><table class="data"><thead><tr><th>Account</th>'
+      + '<th>Events it records</th></tr></thead><tbody>' + users
+      + '</tbody></table></div>',
+    '<p class="lede" style="font-size:12px">Only the G6 account logs carbohydrate. '
+      + 'The G7 app records blood glucose and insulin only &mdash; which matters, '
+      + 'because G7 is the sensor with the pregnancy indication. Meals have to be '
+      + 'captured in this app either way.</p>'
+  ].join("");
+}
+
+function screenRunin() {
+  var day = 4, total = D.run_in_days;
+  var dots = "";
+  for (var i = 1; i <= total; i++) {
+    dots += '<span style="width:9px;height:9px;border-radius:50%;background:'
+      + (i <= day ? "var(--series-2)" : "var(--rule-2)") + '"></span>';
+  }
+  return [
+    '<h2 class="scr-title">Your first week</h2>',
+    '<p class="lede">The sensor is recording. The screen stays dark on purpose.</p>',
+    '<div class="card" style="text-align:center;padding:26px 14px">'
+      + '<div style="display:flex;gap:7px;justify-content:center;margin-bottom:14px">'
+      + dots + '</div>'
+      + '<div style="font-family:var(--display);font-size:34px;font-weight:500">Day '
+      + day + ' of ' + total + '</div>'
+      + '<p style="margin-top:7px">Eat the way you normally would. Nothing you do '
+      + 'this week is wrong.</p></div>',
+    card("Why you cannot see the numbers yet",
+      "This week sets your own baseline. If you changed what you ate because of "
+      + "what you saw, we would be measuring the sensor instead of measuring you."),
+    card("What happens on Monday",
+      "The readings unlock, and everything the app tells you afterwards is "
+      + "compared with your own week &mdash; not with a target from somebody "
+      + "else&rsquo;s study."),
+    '<div class="note">Already recorded: <strong>' + fmtInt(D.run_in_metrics.n)
+      + '</strong> readings over <strong>' + day + '</strong> days. '
+      + 'You will not see them until the week is complete.</div>'
+  ].join("");
+}
+
+function screenToday() {
+  var live = !!LIVEDATA;
+  var pts = live ? LIVEDATA : D.today;
+  var vals = pts.map(function (p) { return p.v; });
+  var band = D.band.map(function (b) { return [b.p25, b.p75]; });
+  var last = pts[pts.length - 1];
+  var step = Math.max(1, Math.floor(pts.length / band.length));
+  var bandAligned = [];
+  for (var i = 0; i < pts.length; i++) {
+    var b = D.band[Math.min(D.band.length - 1, Math.floor(i * D.band.length / pts.length))];
+    bandAligned.push([b.p25, b.p75]);
+  }
+  var arrows = { doubleUp: "⇈", singleUp: "↑", fortyFiveUp: "↗",
+    flat: "→", fortyFiveDown: "↘", singleDown: "↓",
+    doubleDown: "⇊" };
+  var meals = [
+    { i: Math.floor(pts.length * 0.31), label: "Breakfast" },
+    { i: Math.floor(pts.length * 0.53), label: "Lunch" },
+    { i: Math.floor(pts.length * 0.79), label: "Dinner" }
+  ].filter(function (m) { return vals[m.i] != null; });
+
+  // Live mode: stats from the live readings only, and no personal band or
+  // threshold -- those belong to the demo participant, not to this account.
+  var stat = (function () {
+    var v = vals.filter(function (x) { return x != null; });
+    if (!v.length) return { mean: 0, cv: 0, lo: 0, hi: 0 };
+    var m = v.reduce(function (a, b) { return a + b; }, 0) / v.length;
+    var sd = Math.sqrt(v.reduce(function (a, b) {
+      return a + (b - m) * (b - m); }, 0) / Math.max(v.length - 1, 1));
+    return { mean: Math.round(m * 10) / 10, cv: Math.round(sd / m * 1000) / 10,
+             lo: Math.min.apply(null, v), hi: Math.max.apply(null, v) };
+  })();
+
+  var chart = lineChart({
+    series: [{ values: vals, color: "var(--series-1)" }],
+    band: live ? null : bandAligned,
+    lo: live ? Math.max(40, Math.floor((stat.lo - 20) / 10) * 10) : 50,
+    hi: live ? Math.ceil((stat.hi + 20) / 10) * 10 : 210,
+    xMax: vals.length - 1,
+    threshold: live ? null : D.baseline.own_threshold,
+    yTicks: [70, 110, 150, 190],
+    xLabels: [{ i: 0, l: "12a" }, { i: Math.floor(vals.length * 0.25), l: "6a" },
+      { i: Math.floor(vals.length * 0.5), l: "12p" },
+      { i: Math.floor(vals.length * 0.75), l: "6p" }],
+    marks: meals.map(function (m) { return { i: m.i, v: vals[m.i] }; }),
+    alt: "Your glucose through today, against your own usual range"
+  });
+
+  return [
+    live
+      ? '<div class="banner"><strong>Live Dexcom sandbox</strong>'
+        + 'Real readings from a simulated Dexcom account through the local '
+        + 'server. This account is not pregnant &mdash; it is here to prove the '
+        + 'data connection, not to show a clinical picture. '
+        + fmtInt(vals.length) + ' readings.</div>'
+      : "",
+    '<div class="readout"><span class="big mono">' + last.v + '</span>'
+      + '<span class="unit">mg/dL</span>'
+      + '<span class="arrow">' + (arrows[last.tr] || "→") + '</span></div>',
+    live
+      ? '<p class="lede" style="margin-top:-6px">Sandbox account, '
+        + esc(String(pts[0].t).slice(0, 10)) + '.</p>'
+      : '<p class="lede" style="margin-top:-6px">Steady, and inside the range '
+        + 'you usually sit in.</p>',
+    '<figure><div class="chartwrap" id="todayChart">' + chart + '</div>'
+      + '<figcaption>' + (live
+        ? "Live sandbox readings, most recent day."
+        : "Today, against your own week.") + '</figcaption></figure>',
+    live ? "" :
+    '<div class="legend"><span><span class="swatch" style="background:var(--series-1)">'
+      + '</span>Today</span><span><span class="swatch band"></span>'
+      + 'Where you usually are</span></div>',
+    live
+      ? '<div class="card"><h4>This sandbox account</h4>'
+        + '<dl class="kv" style="margin-top:6px">'
+        + '<dt>Average</dt><dd>' + stat.mean + ' mg/dL</dd>'
+        + '<dt>Steadiness</dt><dd>' + stat.cv + '%</dd>'
+        + '<dt>Range</dt><dd>' + stat.lo + '&ndash;' + stat.hi + ' mg/dL</dd>'
+        + '<dt>Readings</dt><dd>' + fmtInt(vals.length) + '</dd></dl>'
+        + '<p style="margin-top:8px;font-size:12px">Computed from the live '
+        + 'readings above. The demo participant&rsquo;s own baseline does not '
+        + 'apply to this account, so it is not shown.</p></div>'
+      : '<div class="card"><h4>Today so far</h4><dl class="kv" style="margin-top:6px">'
+        + '<dt>Average</dt><dd>' + D.active_metrics.mean + ' mg/dL</dd>'
+        + '<dt>Your usual average</dt><dd>' + D.baseline.median + ' mg/dL</dd>'
+        + '<dt>Steadiness</dt><dd>' + D.active_metrics.cv + '%</dd>'
+        + '<dt>Readings</dt><dd>' + fmtInt(pts.length) + '</dd></dl></div>',
+    live ? "" :
+    '<div class="note">There is no target line here, because there is no agreed '
+      + 'glucose target for people in this study. The band is <strong>your own '
+      + 'week</strong>.</div>',
+    ARM === "model"
+      ? '<button class="btn" data-go="plan">Plan a meal</button>'
+      : '<div class="card sunk"><p>This arm sees the sensor only. Meal planning '
+        + 'and suggestions are not part of it.</p></div>'
+  ].join("");
+}
+
+function screenPlan() {
+  var res;
+  try {
+    res = ENGINE.propose(SEL, SLOTMIN, D.participant.week,
+      D.baseline.fasting_median, 0, 135);
+  } catch (e) {
+    return '<div class="banner"><strong>Guardrail stopped this</strong>'
+      + esc(e.message) + '</div>';
+  }
+  var cats = {};
+  D.foods.forEach(function (f) {
+    if (["beverage"].indexOf(f.category) >= 0 && !f.blocked_reason) return;
+    (cats[f.category] = cats[f.category] || []).push(f);
+  });
+  var picker = Object.keys(cats).sort().map(function (c) {
+    return '<div><div class="eyebrow" style="margin:8px 0 5px">'
+      + esc(c.replace(/_/g, " ")) + '</div><div class="chips">'
+      + cats[c].map(function (f) {
+          var on = SEL.indexOf(f.id) >= 0;
+          return '<button class="chip' + (f.blocked_reason ? " blocked" : "")
+            + '" data-food="' + f.id + '" aria-pressed="' + on + '"'
+            + (f.blocked_reason ? ' disabled title="' + esc(f.blocked_reason) + '"' : "")
+            + '>' + esc(f.name) + '</button>';
+        }).join("") + '</div></div>';
+  }).join("");
+
+  var best = res.suggestions[0];
+  var chart = lineChart({
+    series: best ? [
+      { values: res.curve.mgdl, color: "var(--series-1)", label: "as planned" },
+      { values: best.curve.mgdl, color: "var(--series-2)", label: "with this",
+        labelBelow: true }
+    ] : [{ values: res.curve.mgdl, color: "var(--series-1)" }],
+    lo: 60, hi: Math.max(200, Math.ceil(res.curve.peak / 20) * 20 + 20),
+    xMax: res.curve.mgdl.length - 1,
+    threshold: D.baseline.own_threshold,
+    yTicks: [80, 120, 160, 200],
+    xLabels: [{ i: 0, l: "0" }, { i: 12, l: "1h" }, { i: 24, l: "2h" },
+      { i: 35, l: "3h" }],
+    alt: "Likely glucose after this meal, with and without the suggestion"
+  });
+
+  var blocked = SEL.map(foodById).filter(function (f) { return f && f.blocked_reason; });
+
+  return [
+    '<h2 class="scr-title">Plan a meal</h2>',
+    '<p class="lede">What are you thinking of eating at ' + hhmm(SLOTMIN)
+      + '? Tap to build it.</p>',
+    '<div class="card sunk" style="padding:10px 12px">'
+      + '<div class="eyebrow" style="margin-bottom:6px">Time of day</div>'
+      + '<div class="chips">'
+      + [["7:30am", 450], ["12:45pm", 765], ["3:30pm", 930], ["7:00pm", 1140]]
+        .map(function (t) {
+          return '<button class="chip" data-min="' + t[1] + '" aria-pressed="'
+            + (SLOTMIN === t[1]) + '">' + t[0] + '</button>';
+        }).join("") + '</div></div>',
+    '<div class="eyebrow">What is on the plate</div>',
+    '<div style="height:168px;overflow-y:auto;border:1px solid var(--rule);'
+      + 'border-radius:12px;padding:2px 10px 10px">' + picker + '</div>',
+    blocked.length
+      ? '<div class="banner"><strong><span class="pill attn" style="border:0;'
+        + 'background:none;padding:0"><span class="dot"></span></span>Not in '
+        + 'pregnancy</strong>' + blocked.map(function (f) {
+            return esc(f.name) + " &mdash; " + esc(f.blocked_reason);
+          }).join("<br>") + '</div>'
+      : "",
+    '<figure><div class="chartwrap" id="planChart">' + chart + '</div>'
+      + '<figcaption>Meals like this have usually been followed by a rise to about '
+      + '<strong class="mono">' + Math.round(res.curve.peak) + ' mg/dL</strong> '
+      + 'around ' + res.curve.peakMin + ' minutes after you eat.</figcaption></figure>',
+    best ? '<div class="legend">'
+      + '<span><span class="swatch" style="background:var(--series-1)"></span>'
+      + 'As planned</span>'
+      + '<span><span class="swatch" style="background:var(--series-2)"></span>'
+      + 'With the first suggestion</span></div>' : "",
+    '<dl class="kv"><dt>Carbohydrate in this meal</dt><dd>'
+      + Math.round(res.meal.carb) + ' g</dd>'
+      + '<dt>Protein</dt><dd>' + Math.round(res.meal.protein) + ' g</dd>'
+      + '<dt>Fiber</dt><dd>' + Math.round(res.meal.fiber) + ' g</dd></dl>',
+    res.day.level !== "ok"
+      ? '<div class="banner floor"><strong>Carbohydrate floor</strong>'
+        + esc(res.day.msg) + '</div>' : "",
+    '<span class="eyebrow">' + (res.suggestions.length ? "A few options"
+      : "Nothing to suggest") + '</span>',
+    res.suggestions.length
+      ? res.suggestions.map(suggCard).join("")
+      : '<div class="card sunk"><p>This one already sits inside your usual range. '
+        + 'Nothing to change.</p></div>',
+    res.curve.peak > D.baseline.own_threshold
+      ? '<button class="btn ghost" data-go="flagged">See what gets sent to your '
+        + 'dietitian</button>' : ""
+  ].join("");
+}
+
+function suggCard(s) {
+  var kindLabel = { sequence: "Order", timing: "Timing", add: "Add", swap: "Swap" };
+  return '<div class="sugg"><div class="top">'
+    + '<span class="kind">' + kindLabel[s.kind] + '</span>'
+    + '<div><h5>' + esc(s.title) + '</h5><p>' + esc(s.detail) + '</p></div></div>'
+    + '<div class="num">usually about ' + Math.round(s.basePeak) + ' &rarr; '
+    + Math.round(s.peak) + ' mg/dL'
+    + (s.carbDelta > 0 ? ' &middot; +' + Math.round(s.carbDelta) + ' g carbohydrate'
+       : s.carbDelta < 0 ? ' &middot; ' + Math.round(s.carbDelta) + ' g carbohydrate'
+       : ' &middot; same food') + '</div></div>';
+}
+
+function screenCompare() {
+  var proj = D.example_card.projected_peak_mgdl;
+  var actual = Math.round(proj * 0.93);
+  var n = 36;
+  var pcurve = [], acurve = [];
+  for (var i = 0; i < n; i++) {
+    var k = Math.pow(i, 1.4) * Math.exp(-i / 6.5);
+    pcurve.push(D.baseline.fasting_median + (proj - D.baseline.fasting_median)
+      * k / 2.34);
+    acurve.push(D.baseline.fasting_median + (actual - D.baseline.fasting_median)
+      * k / 2.34 + (i % 4 === 0 ? 2.2 : -1.3));
+  }
+  var chart = lineChart({
+    series: [
+      { values: pcurve, color: "var(--series-1)", dash: true, label: "expected" },
+      { values: acurve, color: "var(--series-2)", label: "what happened",
+        labelBelow: true }
+    ],
+    lo: 70, hi: 210, xMax: n - 1, threshold: D.baseline.own_threshold,
+    yTicks: [80, 120, 160, 200],
+    xLabels: [{ i: 0, l: "7:30a" }, { i: 12, l: "8:30a" }, { i: 24, l: "9:30a" }],
+    alt: "What the model expected this morning against what the sensor recorded"
+  });
+  return [
+    '<h2 class="scr-title">This morning</h2>',
+    '<p class="lede">What the model expected, and what actually happened.</p>',
+    '<figure><div class="chartwrap">' + chart + '</div>'
+      + '<figcaption>Bagel and orange juice, 7:30am.</figcaption></figure>',
+    '<div class="legend">'
+      + '<span><span class="swatch" style="background:var(--series-1)"></span>'
+      + 'Expected</span><span><span class="swatch" style="background:var(--series-2)">'
+      + '</span>What happened</span></div>',
+    '<dl class="kv"><dt>Expected peak</dt><dd>' + Math.round(proj) + ' mg/dL</dd>'
+      + '<dt>Your peak</dt><dd>' + actual + ' mg/dL</dd>'
+      + '<dt>Difference</dt><dd>' + (actual - Math.round(proj)) + ' mg/dL</dd></dl>',
+    card("The model was close, not right",
+      "It is wrong by some amount every time. Showing you that is the point &mdash; "
+      + "it is how you decide how much to trust it, and it is how we measure "
+      + "whether it works."),
+    '<div class="note">The first day of each sensor is left out of this comparison. '
+      + 'Sensor agreement is weakest on day one and settles by day four.</div>'
+  ].join("");
+}
+
+function screenWeek() {
+  var days = D.daily.slice(-7);
+  var vals = days.map(function (d) { return d.mean; });
+  var chart = lineChart({
+    series: [{ values: vals, color: "var(--series-1)" }],
+    lo: 85, hi: 125, xMax: Math.max(1, vals.length - 1),
+    yTicks: [90, 100, 110, 120], height: 110,
+    xLabels: days.map(function (d, i) {
+      return { i: i, l: ["S", "M", "T", "W", "T", "F", "S"][new Date(d.date).getDay()] };
+    }),
+    marks: vals.map(function (v, i) { return { i: i, v: v }; }),
+    alt: "Average glucose each day this week"
+  });
+  var c = D.coaching;
+  return [
+    '<h2 class="scr-title">This week</h2>',
+    '<div class="card"><p style="color:var(--ink);font-size:13.5px">'
+      + esc(c.opening[0]) + " " + esc(c.observation[1]) + " "
+      + esc(c.invitation[0]) + '</p>'
+      + '<p style="margin-top:8px;font-size:11.5px;color:var(--ink-3)">'
+      + 'Written by a model from your dietitian&rsquo;s notes, and reviewed before '
+      + 'it reached you.</p></div>',
+    '<figure><div class="chartwrap">' + chart + '</div>'
+      + '<figcaption>Your average each day. Your usual is '
+      + D.baseline.median + ' mg/dL.</figcaption></figure>',
+    '<div class="tiles">'
+      + tile("Average", D.active_metrics.mean, "mg/dL this week")
+      + tile("Steadiness", D.active_metrics.cv + "%", "lower is steadier")
+      + tile("Readings", fmtInt(D.active_metrics.n), "sensor working well")
+      + '</div>',
+    '<div class="note">No score, no streak, and nothing to beat. These are '
+      + 'descriptions, not a grade.</div>'
+  ].join("");
+}
+
+function screenFlagged() {
+  var card0 = D.example_card;
+  return [
+    '<div class="banner"><strong><span style="width:8px;height:8px;'
+      + 'border-radius:50%;background:currentColor;display:inline-block"></span>'
+      + 'Sent to your dietitian</strong>'
+      + 'Something about this morning was outside what you usually do. '
+      + 'Your dietitian has it and will come back to you today.</div>',
+    '<h2 class="scr-title">We passed this to Maria</h2>',
+    '<p class="lede">Maria Ortiz, RD, is the dietitian on this study. She sees '
+      + 'what the model saw, and she decides what reaches you.</p>',
+    card("What we noticed",
+      "Breakfast today was higher and faster than your own mornings usually are. "
+      + "That is all we can tell you &mdash; it is not a diagnosis, and it does "
+      + "not change anything about your care today."),
+    '<div class="card"><h4>What happens now</h4><dl class="kv" style="margin-top:6px">'
+      + '<dt>Reviewed by</dt><dd>Maria Ortiz, RD</dd>'
+      + '<dt>Usually within</dt><dd>4 hours</dd>'
+      + '<dt>Business hours</dt><dd>8am&ndash;5pm</dd></dl>'
+      + '<p style="margin-top:8px;font-size:12.5px">Nobody is watching this '
+      + 'overnight. Readings reach us about an hour late, so this app is not a '
+      + 'way to get help quickly.</p></div>',
+    '<div class="note"><strong>If you feel unwell, do not use this app.</strong> '
+      + 'Call your obstetric team, or go to Labor and Delivery. The number is in '
+      + 'Settings and on your card.</div>',
+    '<button class="btn ghost" id="seeRd">See exactly what Maria received</button>'
+  ].join("");
+}
+
+function screenLimits() {
+  var rows = [
+    ["Diagnose anything", "It cannot tell you whether you have gestational "
+      + "diabetes. Your three-hour test already answered that."],
+    ["Change your medicines", "It never suggests starting, stopping or adjusting "
+      + "anything, including insulin."],
+    ["Replace your obstetrician", "Nothing here changes your appointments or your "
+      + "care plan."],
+    ["Watch you in real time", "Readings arrive about an hour behind, and nobody "
+      + "monitors them overnight."],
+    ["Be right every time", "The model is an estimate. The app shows you how far "
+      + "off it was."]
+  ];
+  return [
+    '<h2 class="scr-title">What this app does not do</h2>',
+    '<p class="lede">Worth being plain about.</p>',
+    rows.map(function (r) {
+      return '<div class="card"><h4>' + esc(r[0]) + '</h4><p>' + esc(r[1])
+        + '</p></div>';
+    }).join(""),
+    '<div class="note">This is a research study. Taking part, or stopping, changes '
+      + 'nothing about the care you get at Texas Children&rsquo;s.</div>'
+  ].join("");
+}
+
+function screenSettings() {
+  return [
+    '<h2 class="scr-title">Settings</h2>',
+    toggle("st1", "Meal suggestions", "Pause them and stay in the study. The "
+      + "sensor keeps recording.", true),
+    toggle("st2", "Weekly summary", "One message a week. Never more.", true),
+    toggle("st3", "Flag notifications", "When something goes to your dietitian.", true),
+    '<div class="card"><h4>Notifications are capped</h4>'
+      + '<p>Three a week at most, and never between 9pm and 7am.</p></div>',
+    '<div class="card"><h4>Not here on purpose</h4>'
+      + '<p>No calorie counting. No weight tracking. No streaks, badges or scores. '
+      + 'Those make people feel watched, and there is good evidence they make '
+      + 'eating harder in pregnancy.</p></div>',
+    '<div class="card"><h4>Your obstetric team</h4>'
+      + '<dl class="kv" style="margin-top:6px">'
+      + '<dt>Clinic</dt><dd>832-555-0142</dd>'
+      + '<dt>Labor &amp; Delivery, 24h</dt><dd>832-555-0199</dd>'
+      + '<dt>Study coordinator</dt><dd>832-555-0170</dd></dl></div>',
+    '<button class="btn ghost" data-go="withdraw">Leaving the study</button>'
+  ].join("");
+}
+
+function toggle(id, t, d, on) {
+  return '<div class="card"><div style="display:flex;gap:10px;align-items:flex-start">'
+    + '<div style="flex:1"><h4>' + esc(t) + '</h4><p>' + esc(d) + '</p></div>'
+    + '<button class="tgl" id="' + id + '" role="switch" aria-checked="' + on + '" '
+    + 'style="flex:none;width:42px;height:25px;border-radius:999px;border:0;'
+    + 'cursor:pointer;position:relative;background:' + (on ? "var(--series-2)"
+    : "var(--rule-2)") + '"><span style="position:absolute;top:3px;left:'
+    + (on ? "20px" : "3px") + ';width:19px;height:19px;border-radius:50%;'
+    + 'background:#fff;transition:left .15s"></span>'
+    + '<span class="offscr">' + esc(t) + '</span></button></div></div>';
+}
+
+function screenWithdraw() {
+  return [
+    '<h2 class="scr-title">Leaving the study</h2>',
+    '<p class="lede">You can stop at any time, and it changes nothing about your '
+      + 'care. Here is exactly what happens to your data, because it is not one '
+      + 'simple answer.</p>',
+    '<div class="card"><h4>Deleting the app</h4>'
+      + '<p>Removes it from your phone. It does not delete anything we have '
+      + 'already received.</p></div>',
+    '<div class="card"><h4>Asking us to delete your data</h4>'
+      + '<p>We delete everything we hold that has not already gone into an '
+      + 'analysis. Anything already analysed stays in that analysis &mdash; we '
+      + 'cannot take it back out, and we would be misleading you if we said we '
+      + 'could.</p></div>',
+    '<div class="card"><h4>Your Dexcom data</h4>'
+      + '<p>Dexcom keeps its own copy. That is theirs, not ours. You can switch '
+      + 'off our access in your Dexcom account under Permissions, and they stop '
+      + 'sending us anything new immediately.</p></div>',
+    '<div class="card"><h4>The sensor</h4>'
+      + '<p>Take it off and bring it to your next visit, or throw it away. It is '
+      + 'yours.</p></div>',
+    '<div class="btnrow"><button class="btn ghost">Stop the coaching</button>'
+      + '<button class="btn quiet">Withdraw fully</button></div>',
+    '<p class="lede" style="font-size:12px;text-align:center">Either option can be '
+      + 'done by calling the coordinator instead.</p>'
+  ].join("");
+}
+
+function screenNotInArm(name) {
+  return [
+    '<h2 class="scr-title">' + esc(name) + '</h2>',
+    '<div class="card sunk" style="padding:24px 16px;text-align:center">'
+      + '<p style="color:var(--ink);font-size:14px">Not part of the monitor-only '
+      + 'arm.</p>'
+      + '<p style="margin-top:8px">Participants in this arm see their sensor '
+      + 'readings and nothing else. The algorithm is the only difference between '
+      + 'the two randomised groups, which is what makes the comparison "what does '
+      + 'the AI add over a monitor alone".</p></div>',
+    '<button class="btn ghost" id="toModel">Switch to the model arm</button>'
+  ].join("");
+}
+
+function card(t, b) {
+  return '<div class="card"><h4>' + esc(t) + '</h4><p>' + esc(b) + '</p></div>';
+}
+function tile(lab, val, sub) {
+  return '<div class="tile"><div class="lab">' + esc(lab) + '</div>'
+    + '<div class="val">' + esc(String(val)) + '</div>'
+    + '<div class="sub">' + esc(sub) + '</div></div>';
+}
+function fmtInt(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+
+/* ======================================================= rendering */
+var RENDER = {
+  consent: screenConsent, connect: screenConnect, runin: screenRunin,
+  today: screenToday, plan: screenPlan, compare: screenCompare,
+  week: screenWeek, flagged: screenFlagged, limits: screenLimits,
+  settings: screenSettings, withdraw: screenWithdraw
+};
+
+function render() {
+  var v = $("#view");
+  var def = SCREENS.filter(function (s) { return s.id === SCREEN; })[0];
+  if (ARM === "monitor" && MODEL_ONLY[SCREEN]) {
+    v.innerHTML = screenNotInArm(def ? def.label : SCREEN);
+  } else {
+    v.innerHTML = RENDER[SCREEN] ? RENDER[SCREEN]() : "";
+  }
+  v.scrollTop = 0;
+  renderTabs();
+  renderIndex();
+  renderNote();
+  wire();
+}
+
+function renderTabs() {
+  var tabs = [["today", "Today", "today"], ["plan", "Plan", "plan"],
+    ["week", "Week", "week"], ["settings", "More", "more"]];
+  $("#tabbar").innerHTML = tabs.map(function (t) {
+    var on = SCREEN === t[0]
+      || (t[0] === "settings" && ["settings", "limits", "withdraw"].indexOf(SCREEN) >= 0)
+      || (t[0] === "today" && ["compare", "flagged", "runin"].indexOf(SCREEN) >= 0)
+      || (t[0] === "plan" && SCREEN === "plan");
+    return '<button data-tab="' + t[0] + '" aria-pressed="' + on + '">'
+      + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" '
+      + 'stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+      + ICON[t[2]] + '</svg>' + esc(t[1]) + '</button>';
+  }).join("");
+}
+
+function renderIndex() {
+  $("#screenIndex").innerHTML = SCREENS.map(function (s) {
+    var dim = ARM === "monitor" && MODEL_ONLY[s.id];
+    return '<button data-screen="' + s.id + '" aria-pressed="' + (SCREEN === s.id)
+      + '"' + (dim ? ' style="opacity:.5"' : "") + '>'
+      + '<span class="n">' + s.n + '</span>' + esc(s.label)
+      + (s.star ? ' <span class="star">&#9733;</span>' : "") + '</button>';
+  }).join("");
+}
+
+function renderNote() {
+  var n = NOTES[SCREEN];
+  var p = $("#railNote");
+  if (!n) { p.hidden = true; return; }
+  p.hidden = false;
+  p.innerHTML = '<span class="eyebrow">Reviewer note</span><h2>' + n.h + '</h2>'
+    + n.p.map(function (x) { return "<p>" + x + "</p>"; }).join("")
+    + '<p class="cite">' + n.c + '</p>';
+}
+
+function renderProvenance() {
+  $("#railProv").innerHTML = '<span class="eyebrow">Where these numbers come from'
+    + '</span><h2>Nothing here is a patient</h2><p>' + esc(D.provenance) + '</p>'
+    + '<div class="tiles" style="margin-top:12px">'
+    + tile("Mean", D.active_metrics.mean, "mg/dL, synthetic")
+    + tile("GLAM mean", "98", "published, uncomplicated")
+    + tile("Her threshold", D.baseline.own_threshold, "90th centile, run-in")
+    + tile("Carb floor", D.constraints.carb_floor_g + " g", "IOM, enforced")
+    + '</div>'
+    + '<p style="margin-top:12px">The carbohydrate floor is a hard constraint in '
+    + 'the engine, not a guideline in a document. A suggestion that would carry '
+    + 'the day below it is refused before it is ever shown, and the test suite '
+    + 'asserts it under adversarial input.</p>'
+    + '<p class="cite">Sweeting et al., Nutrients 2021, PMID 34444759 &middot; '
+    + 'GLAM, Diabetes Care 2024, PMC11097821</p>';
+}
+
+/* ------------------------------------------------- dietitian console */
+function renderRd() {
+  var c = D.example_card;
+  var queue = [
+    { id: "P-014", ini: "A.R.", wk: "W28+2", meal: "Bagel, orange juice",
+      time: "7:30am", state: "awaiting review", active: true },
+    { id: "P-009", ini: "M.T.", wk: "W31+0", meal: "White rice, chicken",
+      time: "7:15pm", state: "approved, sent", active: false },
+    { id: "P-022", ini: "J.K.", wk: "W26+4", meal: "Pasta, bread",
+      time: "12:40pm", state: "edited by RD", active: false }
+  ];
+  var rows = queue.map(function (q) {
+    return '<tr' + (q.active ? ' style="background:color-mix(in srgb,'
+      + 'var(--series-1) 7%,transparent)"' : "") + '>'
+      + '<td><strong>' + q.id + '</strong><br><span style="font-size:11.5px;'
+      + 'color:var(--ink-3)">' + q.ini + ' &middot; ' + q.wk + '</span></td>'
+      + '<td>' + esc(q.meal) + '<br><span style="font-size:11.5px;'
+      + 'color:var(--ink-3)">' + q.time + '</span></td>'
+      + '<td>' + esc(q.state) + '</td></tr>';
+  }).join("");
+
+  var feats = c.features.map(function (f) {
+    return '<div class="feat"><span class="n">' + esc(f.name) + '</span>'
+      + '<span class="v">' + esc(f.value) + '</span>'
+      + (f.note ? '<span class="note" style="border:0;background:none;padding:0">'
+        + esc(f.note) + '</span>' : "") + '</div>';
+  }).join("");
+
+  var sug = c.model_suggests.map(function (s) {
+    return '<div class="sugg"><div class="top"><span class="kind">'
+      + esc(s.kind) + '</span><div><h5>' + esc(s.title) + '</h5>'
+      + '<p>' + esc(s.rationale) + '</p></div></div>'
+      + '<div class="num">peak ' + Math.round(s.baseline_peak) + ' &rarr; '
+      + Math.round(s.projected_peak) + ' mg/dL &middot; carbohydrate '
+      + (s.carb_delta_g >= 0 ? "+" : "") + Math.round(s.carb_delta_g)
+      + ' g</div></div>';
+  }).join("");
+
+  $("#stageRd").innerHTML =
+    '<div class="stage" style="grid-template-columns:minmax(0,1fr) minmax(0,420px)">'
+    + '<section class="panel">'
+    + '<span class="eyebrow">Review queue</span>'
+    + '<h2>Maria Ortiz, RD &mdash; 1 waiting</h2>'
+    + '<p>The dietitian monitors the model rather than holding scheduled visits. '
+    + 'Nothing the model produces reaches a participant until it has been through '
+    + 'this screen.</p>'
+    + '<div class="scroll-x"><table class="data"><thead><tr><th>Participant</th>'
+    + '<th>Meal</th><th>State</th></tr></thead><tbody>' + rows
+    + '</tbody></table></div>'
+    + '<h3>Why these three and not everyone</h3>'
+    + '<p>A card is raised only when the projection crosses that '
+    + 'participant&rsquo;s own threshold &mdash; the 90th centile of her own '
+    + 'blinded run-in week. It is investigator-defined and the console says so, '
+    + 'because no validated CGM threshold exists for this population.</p>'
+    + '<div class="tiles" style="margin-top:14px">'
+    + tile("Cards today", "3", "across 41 enrolled")
+    + tile("Median review", "52 min", "target under 4 hours")
+    + tile("Edited by RD", "34%", "model wording changed")
+    + tile("Declined", "11%", "not sent to participant")
+    + '</div></section>'
+
+    + '<section class="panel">'
+    + '<span class="eyebrow">Metabolic summary card</span>'
+    + '<h2>' + esc(c.participant) + ' &middot; ' + esc(c.generated) + '</h2>'
+    + '<div class="flagcard" style="margin-top:12px"><div class="hd">'
+    + '<span class="who">' + esc(c.participant) + '</span>'
+    + '<span class="pill attn"><span class="dot"></span>crossed her own threshold</span>'
+    + '<span class="st">awaiting review</span></div>'
+    + '<div class="bd">'
+    + '<dl class="kv"><dt>Projected peak</dt><dd>'
+    + Math.round(c.projected_peak_mgdl) + ' mg/dL at ' + c.projected_peak_min
+    + ' min</dd><dt>Her own threshold</dt><dd>' + c.own_threshold_mgdl
+    + ' mg/dL</dd></dl>'
+    + '<p style="font-size:11.5px;color:var(--ink-3);margin:0">'
+    + esc(c.own_threshold_basis) + '</p>'
+    + '<hr class="hair">'
+    + '<span class="eyebrow">Features the model used</span>' + feats
+    + '<hr class="hair">'
+    + '<span class="eyebrow">What it proposes to send</span>' + sug
+    + '<hr class="hair">'
+    + '<span class="eyebrow">Guardrails applied</span>'
+    + '<dl class="kv"><dt>Carbohydrate floor</dt><dd>'
+    + c.guardrails_applied.carbohydrate_floor_g + ' g/day</dd>'
+    + '<dt>Day projected at</dt><dd>' + c.guardrails_applied.day_status.carb_g
+    + ' g</dd><dt>Levers tried</dt><dd>'
+    + c.guardrails_applied.levers_tried_in_order.join(" &rarr; ") + '</dd>'
+    + '<dt>Suggestions capped</dt><dd>'
+    + c.guardrails_applied.suggestions_capped_at + '</dd></dl>'
+    + '<div class="btnrow" style="margin-top:4px">'
+    + '<button class="btn">Approve &amp; send</button>'
+    + '<button class="btn quiet">Edit</button>'
+    + '<button class="btn ghost">Decline</button></div>'
+    + '</div></div>'
+    + '<p style="margin-top:14px;font-size:12.5px;color:var(--ink-2)">'
+    + 'Approve, edit or decline is logged against the card, with the reviewer and '
+    + 'the latency. Declines are an outcome in the analysis, not a failure &mdash; '
+    + 'they measure how often the model was wrong enough that a clinician stopped '
+    + 'it.</p>'
+    + '<p class="cite">Human-in-the-loop architecture, per protocol</p>'
+    + '</section></div>';
+}
+
+/* ================================================================ wiring */
+function wire() {
+  document.querySelectorAll("[data-go]").forEach(function (b) {
+    b.onclick = function () { SCREEN = b.getAttribute("data-go"); render(); };
+  });
+  document.querySelectorAll("[data-tab]").forEach(function (b) {
+    b.onclick = function () { SCREEN = b.getAttribute("data-tab"); render(); };
+  });
+  document.querySelectorAll("[data-food]").forEach(function (b) {
+    b.onclick = function () {
+      var id = b.getAttribute("data-food"), i = SEL.indexOf(id);
+      if (i >= 0) { if (SEL.length > 1) SEL.splice(i, 1); }
+      else SEL.push(id);
+      render();
+    };
+  });
+  document.querySelectorAll("[data-min]").forEach(function (b) {
+    b.onclick = function () { SLOTMIN = +b.getAttribute("data-min"); render(); };
+  });
+  document.querySelectorAll("[data-quiz]").forEach(function (b) {
+    b.onclick = function () {
+      var right = b.getAttribute("data-quiz") === b.getAttribute("data-pick");
+      var fb = b.closest(".card").querySelector(".qfb");
+      fb.hidden = false;
+      fb.textContent = right ? "That's right."
+        : "Not quite — have another look above.";
+      fb.style.color = right ? "var(--series-2)" : "var(--attention)";
+    };
+  });
+  document.querySelectorAll(".tgl").forEach(function (b) {
+    b.onclick = function () {
+      var on = b.getAttribute("aria-checked") !== "true";
+      b.setAttribute("aria-checked", String(on));
+      b.style.background = on ? "var(--series-2)" : "var(--rule-2)";
+      b.firstElementChild.style.left = on ? "20px" : "3px";
+    };
+  });
+  var rd = $("#seeRd");
+  if (rd) rd.onclick = function () { showRd(true); };
+  var tm = $("#toModel");
+  if (tm) tm.onclick = function () { setArm("model"); };
+
+  var dexBtn = $("#dexBtn");
+  if (dexBtn) {
+    dexBtn.onclick = function () {
+      if (!LIVE) {
+        $("#dexState").innerHTML = "Live sandbox needs the local server. Run "
+          + "<span class='mono'>uvicorn main:app --app-dir server</span> with your "
+          + "Dexcom app credentials set.";
+        return;
+      }
+      window.location.href = "/auth/login";
+    };
+    if (LIVE) {
+      fetch("/api/dexcom/status").then(function (r) { return r.json(); })
+        .then(function (s) {
+          $("#dexState").textContent = s.connected
+            ? "Connected to the Dexcom sandbox."
+            : (s.configured ? "Ready. Credentials loaded."
+                            : "Server running, no Dexcom credentials set.");
+          var box = $("#liveBox");
+          if (box && s.connected) box.hidden = false;
+        }).catch(function () {});
+    }
+  }
+
+  var on = $("#liveOn"), off = $("#liveOff");
+  if (on) on.onclick = function () {
+    on.textContent = "Loading...";
+    fetch("/api/dexcom/egvs?days=1").then(function (r) { return r.json(); })
+      .then(function (j) {
+        var recs = (j.records || []).filter(function (r) { return r.value != null; });
+        if (!recs.length) { on.textContent = "No readings in range"; return; }
+        recs.sort(function (a, b) {
+          return a.displayTime < b.displayTime ? -1 : 1;
+        });
+        LIVEDATA = recs.map(function (r) {
+          return { t: r.displayTime, v: r.value, tr: r.trend, st: r.status };
+        });
+        SCREEN = "today";
+        render();
+      }).catch(function () { on.textContent = "Could not load"; });
+  };
+  if (off) off.onclick = function () { LIVEDATA = null; SCREEN = "today"; render(); };
+
+  var tc = $("#todayChart");
+  if (tc) {
+    var src = LIVEDATA || D.today;
+    var vals = src.map(function (p) { return p.v; });
+    attachCrosshair(tc, vals, vals.length - 1, function (i, v) {
+      var t = src[i] ? String(src[i].t).slice(11, 16) : "";
+      return t + "  " + v + " mg/dL";
+    });
+  }
+  var pc = $("#planChart");
+  if (pc) {
+    try {
+      var res = ENGINE.propose(SEL, SLOTMIN, D.participant.week,
+        D.baseline.fasting_median, 0, 135);
+      attachCrosshair(pc, res.curve.mgdl, res.curve.mgdl.length - 1,
+        function (i, v) { return (i * 5) + " min  " + Math.round(v) + " mg/dL"; });
+    } catch (e) { /* guardrail path already rendered */ }
+  }
+}
+
+function setArm(a) {
+  ARM = a;
+  $("#armMonitor").setAttribute("aria-pressed", String(a === "monitor"));
+  $("#armModel").setAttribute("aria-pressed", String(a === "model"));
+  render();
+}
+function showRd(on) {
+  $("#stageApp").hidden = on;
+  $("#stageRd").hidden = !on;
+  $("#viewApp").setAttribute("aria-pressed", String(!on));
+  $("#viewRd").setAttribute("aria-pressed", String(on));
+  if (on) renderRd();
+}
+
+/* ==================================================================== */
+function boot(data) {
+  D = data;
+  $("#wkLabel").textContent = D.participant.week_label;
+  $("#armMonitor").onclick = function () { setArm("monitor"); };
+  $("#armModel").onclick = function () { setArm("model"); };
+  $("#viewApp").onclick = function () { showRd(false); };
+  $("#viewRd").onclick = function () { showRd(true); };
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-screen]");
+    if (b) { SCREEN = b.getAttribute("data-screen"); showRd(false); render(); }
+  });
+  var m = location.search.match(/dexcom=(\w+)/);
+  if (m) SCREEN = "connect";
+  // Test handle. tests/test_parity.py drives this to check that the browser
+  // engine and the Python engine produce the same numbers; if they drift, the
+  // demo and the server would tell a participant two different things.
+  window.IGTDebug = { MODEL: MODEL, ENGINE: ENGINE, data: function () { return D; } };
+  renderProvenance();
+  render();
+  var d = new Date();
+  $("#clock").textContent = ((d.getHours() % 12) || 12) + ":"
+    + (d.getMinutes() < 10 ? "0" : "") + d.getMinutes();
+}
+
+fetch("./data.json")
+  .then(function (r) { if (!r.ok) throw new Error("no data"); return r.json(); })
+  .then(function (data) {
+    return fetch("/api/health").then(function (r) { LIVE = r.ok; })
+      .catch(function () { LIVE = false; })
+      .then(function () { boot(data); });
+  })
+  .catch(function (err) {
+    $("#view").innerHTML = '<h2 class="scr-title">Data did not load</h2>'
+      + '<p class="lede">data.json must be published alongside this page. '
+      + 'Regenerate it with <span class="mono">python server/build_data.py</span>.</p>';
+  });
+})();
+</script>

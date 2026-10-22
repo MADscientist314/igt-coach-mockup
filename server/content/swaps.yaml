@@ -1,0 +1,112 @@
+# Swap and addition library.
+#
+# Every line of participant-facing copy in this file is written to be
+# ADDITIVE or NEUTRAL. Nothing here tells a pregnant woman to avoid, cut,
+# limit or restrict a food, and nothing counts calories. The LLM layer
+# selects and phrases FROM this library; it does not generate new
+# nutritional content.
+#
+# In the real study this library is authored and signed off by the diabetes
+# educators who already deliver this medical nutrition therapy, per the
+# protocol (Kusinski et al., Nat Med 2025;31:514-23).
+
+# -------------------------------------------------------------- additions
+# Tried before any swap. These ADD food to the meal.
+additions:
+  - food: eggs_two
+    servings: 1
+    slots: [breakfast, lunch]
+    title: Add two eggs alongside it
+    detail: Protein next to the carbohydrate flattens the rise without taking
+      anything off the plate.
+
+  - food: cottage_cheese
+    servings: 1
+    slots: [breakfast, lunch, snack]
+    title: Add cottage cheese on the side
+    detail: About 14 g of protein. The meal stays exactly as it is.
+
+  - food: avocado_half
+    servings: 1
+    slots: [breakfast, lunch, dinner]
+    title: Add half an avocado
+    detail: Fat slows stomach emptying, so the same carbohydrate arrives
+      more gradually.
+
+  - food: almonds
+    servings: 1
+    slots: [breakfast, snack]
+    title: A handful of almonds with it
+    detail: Protein, fat and fiber in one. Easy to keep in a bag.
+
+  - food: side_salad
+    servings: 1
+    slots: [lunch, dinner]
+    title: Start with a green salad
+    detail: Vegetables first, then the rest of the meal as planned.
+
+  - food: roasted_veg
+    servings: 1
+    slots: [lunch, dinner]
+    title: Add roasted vegetables
+    detail: More volume and more fiber alongside the same main course.
+
+  - food: black_beans
+    servings: 1
+    slots: [lunch, dinner]
+    title: Add black beans
+    detail: Protein and fiber together, and they count toward the
+      carbohydrate pregnancy needs.
+
+  - food: salmon
+    servings: 1
+    slots: [lunch, dinner]
+    title: Add a portion of salmon
+    detail: Protein plus DHA, which matters in the third trimester.
+
+# ------------------------------------------------------------------ swaps
+# In-category only, so the meal stays recognisable. Keyed by the food being
+# replaced; values are candidate replacements in the same category.
+swaps:
+  bagel_plain:        [bagel_wholewheat]
+  cereal_flakes:      [oats_steelcut, oats_instant]
+  oats_instant:       [oats_steelcut]
+  bread_white:        [bread_sourdough, bread_seeded_rye]
+  bread_sourdough:    [bread_seeded_rye]
+  tortilla_flour:     [tortilla_corn]
+  rice_white:         [rice_white_cooled, rice_brown, quinoa]
+  pasta_white:        [pasta_aldente_wholewheat, pasta_chickpea]
+  potato_mashed:      [potato_roast_wedges, sweet_potato]
+  juice_orange:       [orange_whole]
+  yogurt_flavored:    [yogurt_greek_plain]
+  banana_ripe:        [berries]
+
+# --------------------------------------------------------------- coaching
+# Phrasings the weekly narrative draws from. Bounded set; the model picks
+# and fits, it does not invent.
+coaching:
+  opening:
+    - This week your mornings were the busiest part of the day.
+    - Most of your days looked steady, with the movement concentrated after breakfast.
+    - Your evenings were quiet this week.
+  observation:
+    - Breakfast is where your curve moves most, which is usual in the third trimester.
+    - The meals you ate protein with first were the flattest ones.
+    - Your response to the same meal was smaller later in the day.
+  invitation:
+    - Nothing here needs changing. It is here so you can see it.
+    - If you want to try one thing this week, the sequencing one costs nothing.
+    - Your dietitian has seen this week too.
+  never_say:
+    # Kept in the file deliberately: these are the phrasings the refusal
+    # layer checks generated copy against before it is shown.
+    - spike
+    - blood sugar is too high
+    - you should avoid
+    - cut back on
+    - bad food
+    - cheat meal
+    - you went over
+    - stay under
+    - calories
+    - lose weight
