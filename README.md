@@ -1,5 +1,15 @@
 # IGT Coach — IRB mock-up
 
+### ▶ [Open the mock-up](https://madscientist314.github.io/igt-coach-mockup/)
+
+No login needed. Works on a phone.
+
+> **Unpublished research.** This describes a study that has not been submitted
+> or published. The site carries `noindex` and a `robots.txt` that disallows
+> crawlers, so it should stay out of search results — but the repository is
+> public, so treat everything here as readable by anyone who looks. Please do
+> not circulate the link beyond the review team.
+
 An interactive mock-up of the participant app and dietitian console for the
 three-arm study of AI-guided CGM in pregnancies with **intermediate glucose
 intolerance** (abnormal 1-hour screen, normal 3-hour test).
